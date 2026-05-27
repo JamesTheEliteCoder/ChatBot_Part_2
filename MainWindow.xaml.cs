@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Media;
 
 namespace Chat_Bot_Part2_POE
 {
@@ -37,6 +38,7 @@ namespace Chat_Bot_Part2_POE
         public MainWindow()
         {
             InitializeComponent();
+            PlayGreeting();
             botData = new Class1();
             //  Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
             // ArrayList ignore = new ArrayList();
@@ -58,16 +60,18 @@ namespace Chat_Bot_Part2_POE
         } //end of  MainWindow constructor
 
 
-        //async is
-        ///used to keep the UI responsive while the speech synthesis is happening, preventing the application from freezing during the operation.
-        //method to speak the greeting message 
-        private async Task SpeakGreeting()
+        private void PlayGreeting()
         {
-            // in order to get the chat to output seech synthesis, an Azure Speech service resource was used. 
-            var config = SpeechConfig.FromSubscription("YourAzureKeyHere", "YourRegionHere");
-
-            using var synthesizer = new SpeechSynthesizer(config);
-            await synthesizer.SpeakTextAsync( "Hello there I'm Etanda Secure Cybersecurity Awareness Chat Bot, here to help you navigate the digital world safely and securely. Let's get started!"  );
+            try
+            {
+                SoundPlayer player = new SoundPlayer("Greeting.wav");
+                player.Load();
+                player.Play(); 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error playing greeting: " + ex.Message);
+            }
         }
 
 

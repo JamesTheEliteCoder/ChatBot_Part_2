@@ -30,16 +30,16 @@ namespace Chat_Bot_Part2_POE
         //Instance creation of the Array list
         Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
         ArrayList IgnoreAll = new ArrayList();
-
+        private Class1 botData;
         string username = string.Empty;
 
 
         public MainWindow()
         {
             InitializeComponent();
-
-          //  Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
-           // ArrayList ignore = new ArrayList();
+            botData = new Class1();
+            //  Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
+            // ArrayList ignore = new ArrayList();
 
             new Class1(BotResponses, IgnoreAll);
 
@@ -88,18 +88,37 @@ namespace Chat_Bot_Part2_POE
             //First chec if there are any interests
             if (questions.ToLower().Contains("interested"))
             {
-            //Then run interest detection logic
-            ProcessUserInput(questions);
-
+                //Then run interest detection logic
+                ProcessUserInput(questions);
             }
+
+            else if (questions.ToLower().Contains("worried") || questions.ToLower().Contains("anxious") || questions.ToLower().Contains("afraid") || questions.ToLower().Contains("concerned"))
+            {
+                string[] words = questions.Split(' ');
+                string topic = words.Last(); // Get the last word as the topic
+                string message = $"I understand that you're anxious about {topic}.";
+
+                if (botData.SafetyTips.ContainsKey(topic.ToLower()))
+                {
+                    message += $" Here's a tip: {botData.SafetyTips[topic.ToLower()]}";
+
+                }
+                else
+                {
+                    //or let the user know that there are no specific tips for that topic 
+                    message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on topics pertaining to " + topic + ".";
+                }
+
+                error_method("ChatBot", message);
+            }
+
             else
             {
                 //Respond normally
                 string botReply = GetRandomResponse(questions);
                 error_method("ChatBot", botReply);
+
             }
-
-
 
             // Auto scroll if need be
             chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
@@ -217,7 +236,7 @@ namespace Chat_Bot_Part2_POE
 
 
 
-        //Method to get a random response from the ArrayList based on the user input
+        //Method to get a random response from the user based on the user input
         private string GetRandomResponse(string userInput)
         {
             string lowerInput = userInput.ToLower();

@@ -186,6 +186,31 @@ namespace Chat_Bot_Part2_POE
         }
 
 
+
+        //creation of safety tips dictionary as a property to store safety tips for different sentiments
+        //
+
+        
+            
+            public Dictionary<string, string> SafetyTips { get; private set; }
+
+            public Class1()
+            {
+                SafetyTips = new Dictionary<string, string>
+        {
+            { "scams", "Always verify the sender before clicking links or sharing personal information." },
+            { "phishing", "Check the email address carefully and avoid downloading attachments from unknown sources." },
+            { "malware", "Keep your antivirus software updated and avoid installing software from untrusted sites." },
+            { "fraud", "Be cautious of unexpected emails or messages, especially those asking for sensitive information. Always double-check the source and look for signs of phishing." }
+
+        };
+            }
+        
+
+
+
+       
+
         public void IgnoreAll(ArrayList ignore)
         {
             ignore.Add("a");

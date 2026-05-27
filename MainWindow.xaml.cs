@@ -12,6 +12,10 @@ using Microsoft.CognitiveServices.Speech;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Chat_Bot_Part2_POE
 {
@@ -67,7 +71,7 @@ namespace Chat_Bot_Part2_POE
         }
 
 
-
+        //method to send messages and detect user interests
         private void SendMessage(object sender, RoutedEventArgs e)
         {
             string questions = question.Text.Trim();
@@ -81,11 +85,21 @@ namespace Chat_Bot_Part2_POE
             // Show user input
             error_method(username, questions);
 
-            // Get bot reply 
-            string botReply = GetRandomResponse(questions);
+            //First chec if there are any interests
+            if (questions.ToLower().Contains("interested"))
+            {
+            //Then run interest detection logic
+            ProcessUserInput(questions);
 
-            // Show bot reply
-            error_method("ChatBot", botReply);
+            }
+            else
+            {
+                //Respond normally
+                string botReply = GetRandomResponse(questions);
+                error_method("ChatBot", botReply);
+            }
+
+
 
             // Auto scroll if need be
             chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
@@ -94,163 +108,10 @@ namespace Chat_Bot_Part2_POE
 
 
 
-        /*
-        private void SendMessage(object sender, RoutedEventArgs e)
-        {//start of send method
-
-            
-            //user input
-            string questions = question.Text.ToString();
-
-            //show what the user has typed
-            error_method(username, questions);
-
-            //if statement to check if user entered a question or not
-            if (questions == "")
-            {
-                //call the error method
-                error_method("ChatBot", "Please enter a message!");
-            }
-            else
-            {//start of else
-
-
-                //temp varaibles and arrays
-                string[] words = questions.Split(' ');
-
-                bool found = false;
-                string message = string.Empty;
-
-                Random indexer = new Random();
-
-                ArrayList per_word = new ArrayList();
-                ArrayList answers_found = new ArrayList();
-
-                //alternate per word from the words array
-                foreach (string word in words)
-                {//start of the main foreach 
-
-
-                    //check if the word is allowed or not
-                    if (!IgnoreAll.Contains(word.ToLower()))
-                    {//start of check word if
-
-                        
-                        per_word.Clear();
-
-
-                        //check if the word INTERESTED has been found or not
-                        if (word.ToLower().Contains("interested"))
-                        {
-
-                            //obtain that which the user is interested in and only that
-                            string store_interests = string.Empty;
-                            bool found_interest = false;
-                            //loop through each word to find the interested word and then store the next words after it
-                            foreach (string interest in words)
-                            {
-                                if (!IgnoreAll.Contains(interest) && interest != "interested")
-                                {
-                                    //then append what they are interested in
-                                    found_interest = true;
-                                    store_interests += interest + ", ";
-                                }
-
-                            }
-
-                            //store the interests in a text file
-                            if (found_interest)
-                            { //start 
-
-                                //filename
-                                string filename = "interested_topic.txt";
-                                File.AppendAllText(filename, username + " " + store_interests);
-                                answers_found.Add("Great, I'll remember that you are interested in " + store_interests);
-
-                            } //end 
-                            else
-                            {
-                                answers_found.Add("sorry, please make sure the topics" + store_interests + "are related");
-                            } //end of else
-
-                        } //end of check interested if
-
-
-                        //foreach to search for the answer of the word allowed
-                        foreach (var entry in BotResponses)
-                        {//start of answer loop
-                            string keyword = entry.Key; //to detect the keywords to trigger the responses
-                            List<string> responses = entry.Value; //the list of responses
-
-                            //check and store
-                            if (word.ToLower().Contains(keyword.ToLower()))
-                            {//start of check answer if
-
-                                found = true;
-
-                                // then pick a random response from the list
-                                int index = indexer.Next(responses.Count);
-                                answers_found.Add(responses[index]);
-
-                            }//end of check answer if
-
-                        }//end of answer loop
-
-                        //then check if found is true and store
-                        //per random
-                        if (found)
-                        {//start of found if
-
-                            //get the random indexer
-                            int indexing = indexer.Next(0, per_word.Count);
-
-                            //store one answer per word now
-                            answers_found.Add(per_word[indexing]);
+      
 
 
 
-                        }//end of found if
-
-
-                    }//end of check word if
-
-
-
-                }//end of the main foreach
-
-
-                //check and show the user the answers
-                if (found)
-                {//start of found if true
-
-                    //get all of answers and show to the user
-                    foreach (string per_answer in answers_found)
-                    {//start of show answer loop
-
-                        //append all message
-                        message += per_answer + "\n";
-
-                    }//end of show answer loop
-
-                    //add the message or answers to the list view
-                    //chats.Items.Add(message);
-                    error_method("Chatbot", message);
-                    //auto scroll
-                    chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
-
-
-                }//end of found if true
-
-
-
-            }
-
-
-
-        }//end of send method
-
-
-        */
 
         //method to submit the username and check if it exists or not
         private void Submit_Username(object sender, RoutedEventArgs e)
@@ -326,6 +187,7 @@ namespace Chat_Bot_Part2_POE
         }
 
 
+        //mthod to change the font colour of the user and the chatbot
         private void error_method(string name, string message)
         {//star of error mehtod
 
@@ -336,12 +198,12 @@ namespace Chat_Bot_Part2_POE
                     Inlines = {
                      new Run{
                      Text=name + " : ",
-                     Foreground =Brushes.Blue
+                     Foreground =Brushes.Purple
 
                      }   ,
                      new Run {
                      Text= " " + message ,
-                     Foreground =Brushes.Red
+                     Foreground =Brushes.LightBlue
 
                      }
 
@@ -381,7 +243,90 @@ namespace Chat_Bot_Part2_POE
 
 
 
+        //method to detect interests in the user input and store them in a text file
+        private void ProcessUserInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                error_method("ChatBot", "Please enter a valid question.");
+                return;
+            }
 
+            string[] words = input.ToLower().Split(new char[] { ' ', ',', '.', '?', '!', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            string message = string.Empty;
+            HashSet<string> ignore = new HashSet<string> { "i", "am", "in", "and", "the", "is" };
+
+            // Logic to detect interests
+            if (input.ToLower().Contains("interested"))
+            {
+                HashSet<string> currentInterests = new HashSet<string>();
+
+                foreach (string word in words)
+                {
+                    string clean = Regex.Replace(word.ToLower().Trim(), @"[^a-zA-Z0-9\s]", "");
+                    if (!ignore.Contains(clean) && clean != "interested" && clean.Length >= 3)
+                    {
+                        currentInterests.Add(clean);
+                    }
+                }
+
+                if (currentInterests.Count > 0)
+                {
+                    string filename = "interested_topic.txt";
+                    string store_interests = string.Join(", ", currentInterests);
+
+                    if (File.Exists(filename))
+                    {
+                        var lines = File.ReadAllLines(filename).ToList();
+                        bool updated = false;
+
+                        for (int i = 0; i < lines.Count; i++)
+                        {
+                            if (lines[i].StartsWith(username))
+                            {
+                                var existingSet = new HashSet<string>(
+                                    lines[i].Replace(username + " interested in:", "")
+                                            .Split(',')
+                                            .Select(x => x.Trim())
+                                            .Where(x => x != "")
+                                );
+
+                                foreach (var item in currentInterests)
+                                    existingSet.Add(item);
+
+                                lines[i] = username + " interested in: " + string.Join(", ", existingSet);
+                                File.WriteAllLines(filename, lines);
+                                updated = true;
+                                break;
+                            }
+                        }
+
+                        if (!updated)
+                        {
+                            lines.Add(username + " interested in: " + store_interests);
+                            File.WriteAllLines(filename, lines);
+                        }
+                    }
+                    else
+                    {
+                        File.WriteAllText(filename, username + " interested in: " + store_interests + Environment.NewLine);
+                    }
+
+                    message = $"Great, I’ll remember that you are interested in {store_interests}.";
+                }
+                else
+                {
+                    message = "Please specify what you're interested in (e.g., 'I am interested in cybersecurity').";
+                }
+            }
+            else
+            {
+                message = "I didn’t detect any interests in your input.";
+            }
+
+            // Show the response in your chat window
+            error_method("ChatBot", message);
+        }
 
 
 

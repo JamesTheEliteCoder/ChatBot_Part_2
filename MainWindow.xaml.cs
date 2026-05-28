@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -8,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Microsoft.CognitiveServices.Speech;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections;
@@ -28,57 +26,55 @@ namespace Chat_Bot_Part2_POE
 
 
 
-        //Instance creation of the Array list
         Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
         ArrayList IgnoreAll = new ArrayList();
-        private Class1 botData;
         string username = string.Empty;
-
+        MediaPlayer player = new MediaPlayer();
+        private Class1 botData;
 
         public MainWindow()
         {
             InitializeComponent();
             PlayGreeting();
-            botData = new Class1();
-            //  Dictionary<string, List<string>> BotResponses = new Dictionary<string, List<string>>();
-            // ArrayList ignore = new ArrayList();
-
-            new Class1(BotResponses, IgnoreAll);
-
-
-            //logic to display the logo
-            try
-            {
-                string logoText = File.ReadAllText("logo.txt");
-                logoBlock.Text = logoText;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading logo: " + ex.Message);
-            }
+            botData = new Class1(BotResponses, IgnoreAll);
+            
 
         } //end of  MainWindow constructor
 
+        
 
+
+
+
+
+
+        //methos to play greeting
         private void PlayGreeting()
         {
             try
             {
-                SoundPlayer player = new SoundPlayer("Greeting.wav");
-                player.Load();
-                player.Play(); 
+                string path = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Greeting.wav");
+
+                player.Open(new Uri(path));
+                player.Play();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error playing greeting: " + ex.Message);
             }
-        }
+        } //end of PlayGreeting method
+
+
+
 
 
         //method to send messages and detect user interests
         private void SendMessage(object sender, RoutedEventArgs e)
         {
             string questions = question.Text.Trim();
+            
 
             if (string.IsNullOrEmpty(questions))
             {
@@ -89,34 +85,55 @@ namespace Chat_Bot_Part2_POE
             // Show user input
             error_method(username, questions);
 
+            string lower = questions.ToLower();
+
             //First chec if there are any interests
-            if (questions.ToLower().Contains("interested"))
+            if (lower.Contains("interested"))
             {
                 //Then run interest detection logic
                 ProcessUserInput(questions);
             }
 
-            else if (questions.ToLower().Contains("worried") || questions.ToLower().Contains("anxious") || questions.ToLower().Contains("afraid") || questions.ToLower().Contains("concerned"))
+            else if (lower.Contains("worried") || 
+                    lower.Contains("anxious")  || 
+                    lower.Contains("afraid")   || 
+                    lower.Contains("concerned")||
+                    lower.Contains("scared"))
             {
-                string[] words = questions.Split(' ');
-                string topic = words.Last(); // Get the last word as the topic
-                string message = $"I understand that you're anxious about {topic}.";
 
-                if (botData.SafetyTips.ContainsKey(topic.ToLower()))
+                string topic = "";
+
+                if (botData != null && botData.SafetyTips != null)
                 {
-                    message += $" Here's a tip: {botData.SafetyTips[topic.ToLower()]}";
-
+                    foreach (var key in botData.SafetyTips.Keys)
+                    {
+                        if (lower.Contains(key))
+                        {
+                            topic = key;
+                            break;
+                        }
+                    }
                 }
+                string message = string.IsNullOrWhiteSpace(topic) 
+                    ? "I understand that you're feeling anxious." : 
+                    $"I understand that you're anxious about {topic}.";
+
+                    if (botData != null &&
+                        botData.SafetyTips != null &&
+                        !string.IsNullOrWhiteSpace(topic) &&
+                        botData.SafetyTips.ContainsKey(topic))
+                    {
+                        message += $" \nHere's a tip: {botData.SafetyTips[topic]}";
+                    }
+                    else
+                    {
+                        message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on all things pertaining to " + topic + ".";
+                    }
+
+                    error_method("ChatBot", message);
+                }
+
                 else
-                {
-                    //or let the user know that there are no specific tips for that topic 
-                    message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on topics pertaining to " + topic + ".";
-                }
-
-                error_method("ChatBot", message);
-            }
-
-            else
             {
                 //Respond normally
                 string botReply = GetRandomResponse(questions);
@@ -124,8 +141,12 @@ namespace Chat_Bot_Part2_POE
 
             }
 
-            // Auto scroll if need be
+            // Auto scroll if need 
+            if(chats.Items.Count > 0)
+            {
             chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
+
+            }
         }
 
 
@@ -179,6 +200,9 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
+
         //method to check name of the user
         private static bool Check_name(string name)
         { //start of check name method
@@ -210,6 +234,13 @@ namespace Chat_Bot_Part2_POE
         }
 
 
+
+
+
+
+
+
+
         //mthod to change the font colour of the user and the chatbot
         private void error_method(string name, string message)
         {//star of error mehtod
@@ -236,7 +267,14 @@ namespace Chat_Bot_Part2_POE
 
                 );
 
-        }
+        } //end of error_method
+
+
+
+
+
+
+
 
 
 
@@ -245,12 +283,19 @@ namespace Chat_Bot_Part2_POE
         {
             string lowerInput = userInput.ToLower();
 
+
+            //split the sentence into words
+            string[] words = lowerInput.Split(new char[]
+                { ' ', ',', '.', '?', '!', ';', ':'
+                
+                }, StringSplitOptions.RemoveEmptyEntries);
+        
             // Loop through the dictionary to find matching keywords and store the corresponding responses
             foreach (var entry in BotResponses)
             {
 
 
-                if (lowerInput.Contains(entry.Key))
+                if (words.Contains(entry.Key))
                 {
                     Random random = new Random();
                     int index = random.Next(entry.Value.Count);
@@ -261,7 +306,7 @@ namespace Chat_Bot_Part2_POE
            
 
             // Default response if no keyword is matched
-            return "I don’t have a response for that yet.";
+            return "I don’t have a response for that yet, please try rephrasing or asking a different question";
         } //end of get random response method
 
 
@@ -349,7 +394,7 @@ namespace Chat_Bot_Part2_POE
 
             // Show the response in your chat window
             error_method("ChatBot", message);
-        }
+        } //end of ProcessUserInput method
 
 
 

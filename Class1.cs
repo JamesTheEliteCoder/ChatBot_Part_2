@@ -12,11 +12,34 @@ namespace Chat_Bot_Part2_POE
 {
     public class Class1
     {
+        public Dictionary<string, string> SafetyTips { get; private set; }
+
+
+
         public Class1(Dictionary<string, List<string>> reply, ArrayList ignore)
         {
             BotResponses(reply);
             IgnoreAll(ignore);
+        
+
+
+                SafetyTips = new Dictionary<string, string>
+        {
+            { "scams", "Always verify the sender before clicking links or sharing personal information." },
+
+            { "phishing", "Check the email address carefully and avoid downloading attachments from unknown sources." },
+
+            { "malware", "Keep your antivirus software updated and avoid installing software from untrusted sites." },
+
+            { "fraud", "Be cautious of unexpected emails or messages, especially those asking for sensitive information. Always double-check the source and look for signs of phishing." }
+
+        };
+            
+        
         }
+
+
+
 
         // Storing of the bot responses 
         public void BotResponses(Dictionary<string, List<string>> responses)
@@ -181,9 +204,9 @@ namespace Chat_Bot_Part2_POE
                 "It sounds like you’re feeling relieved. I’m glad things are looking up for you.",
                 "I hear the relief in your tone. Let’s acknowledge this positive change and move forward with confidence."
             };
-
-
         }
+
+        
 
 
 
@@ -192,20 +215,6 @@ namespace Chat_Bot_Part2_POE
 
         
             
-            public Dictionary<string, string> SafetyTips { get; private set; }
-
-            public Class1()
-            {
-                SafetyTips = new Dictionary<string, string>
-        {
-            { "scams", "Always verify the sender before clicking links or sharing personal information." },
-            { "phishing", "Check the email address carefully and avoid downloading attachments from unknown sources." },
-            { "malware", "Keep your antivirus software updated and avoid installing software from untrusted sites." },
-            { "fraud", "Be cautious of unexpected emails or messages, especially those asking for sensitive information. Always double-check the source and look for signs of phishing." }
-
-        };
-            }
-        
 
 
 

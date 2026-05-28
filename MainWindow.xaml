@@ -12,11 +12,17 @@
 
         <!-- Logo grid -->
         <Grid>
-            <TextBlock x:Name="logoBlock"
-                       FontFamily="Consolas"
-                       TextWrapping="NoWrap"
-                       Margin="10"/>
+            <Image x:Name="logoImage"
+       Width="400"
+       Height="120"
+       Stretch="Uniform"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Top"
+       Margin="0,20,40,0"
+       Source="logo.png"/>
+
         </Grid>
+        <!--End of logo grid -->
 
         <!-- Username grid -->
         <Grid x:Name="name_grid" 

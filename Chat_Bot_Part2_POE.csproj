@@ -9,17 +9,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Greeting.wav" />
+    <None Remove="logo.png" />
     <None Remove="logo.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="logo.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Greeting.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.50.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="logo.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

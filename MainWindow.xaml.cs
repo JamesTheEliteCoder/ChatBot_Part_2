@@ -31,13 +31,13 @@ namespace Chat_Bot_Part2_POE
         string username = string.Empty;
         MediaPlayer player = new MediaPlayer();
         private Class1 botData;
-
+        private Dictionary<string, List<string>> userInterests = new Dictionary<string, List<string>>(); //for memory recollection
         public MainWindow()
         {
             InitializeComponent();
             PlayGreeting();
             botData = new Class1(BotResponses, IgnoreAll);
-            
+            LoadUserMemory();
 
         } //end of  MainWindow constructor
 
@@ -94,6 +94,7 @@ namespace Chat_Bot_Part2_POE
                 ProcessUserInput(questions);
             }
 
+            //sentimetiment detection
             else if (lower.Contains("worried") || 
                     lower.Contains("anxious")  || 
                     lower.Contains("afraid")   || 
@@ -127,7 +128,7 @@ namespace Chat_Bot_Part2_POE
                     }
                     else
                     {
-                        message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on all things pertaining to " + topic + ".";
+                        message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on all things pertaining to " + (topic) + ".";
                     }
 
                     error_method("ChatBot", message);
@@ -137,6 +138,8 @@ namespace Chat_Bot_Part2_POE
             {
                 //Respond normally
                 string botReply = GetRandomResponse(questions);
+
+
                 error_method("ChatBot", botReply);
 
             }
@@ -400,8 +403,30 @@ namespace Chat_Bot_Part2_POE
 
 
 
+        //method to enable memory recollection of the user interests and display them when the user asks about them
+        private void LoadUserMemory()
+        {
+            string filename = "interested_topic.txt";
 
+            if (!File.Exists(filename)) return;
 
+            string[] lines = File.ReadAllLines(filename);
+
+            foreach (string line in lines)
+            {
+                if (line.Contains("interested in:"))
+                {
+                    string[] parts = line.Split(new string[] { "interested in:" }, StringSplitOptions.None);
+
+                    string user = parts[0].Trim();
+                    string[] interests = parts[1].Split(',')
+                                                .Select(x => x.Trim())
+                                                .ToArray();
+
+                    userInterests[user] = new List<string>(interests);
+                }
+            }
+        }
 
 
 

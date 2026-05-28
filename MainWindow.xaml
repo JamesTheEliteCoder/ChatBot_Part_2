@@ -53,7 +53,9 @@
             <TextBox Height="50" 
                      Width="200" 
                      Margin="0,350,200,0" 
-                     x:Name="question"/>
+                     x:Name="question"
+                     KeyDown="Question_KeyDown"
+                     />
 
             <Button Height="50" 
                     Width="200" 

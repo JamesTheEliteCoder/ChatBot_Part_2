@@ -150,6 +150,7 @@ namespace Chat_Bot_Part2_POE
             chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
 
             }
+            question.Clear(); 
         }
 
 
@@ -426,9 +427,20 @@ namespace Chat_Bot_Part2_POE
                     userInterests[user] = new List<string>(interests);
                 }
             }
+        } //end of LoadUserMemory method
+
+
+        private void Question_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                //prevent the beep sound when pressing enter
+                e.Handled = true;
+
+                //call your existing send method
+                SendMessage(sender, e);
+            }
         }
-
-
 
     }
 }

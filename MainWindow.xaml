@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat_Bot_Part2_POE"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="CyberSecurity Chatbot" Height="600" Width="1000">
 
     <!-- Parent grid -->
     <Grid>
@@ -40,29 +40,136 @@
         </Grid>
         <!--End of username grid -->
 
-        <!-- Chats grid -->
-        <Grid x:Name="chat_grid" 
-              Visibility="Hidden">
+        <!-- Chat and task assistant grid -->
+        <Grid x:Name="chat_grid" Visibility="Hidden" Margin="20,150,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <!--ListView to display the chats-->
-            <ListView Height="350"
-                      Width="400" 
-                      Margin="0,0,0,70" 
-                      x:Name="chats"/>
+            <!-- Chat section -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="60" />
+                </Grid.RowDefinitions>
 
-            <TextBox Height="50" 
-                     Width="200" 
-                     Margin="0,350,200,0" 
-                     x:Name="question"
-                     KeyDown="Question_KeyDown"
-                     />
+                <!--To display the chats in list view-->
+                <ListView x:Name="chats"
+                  Grid.Row="0"
+                  Margin="0,0,0,10" />
 
-            <Button Height="50" 
-                    Width="200" 
-                    Margin="220,350,0,0"
-                    Content="send"
-                    Click="SendMessage"/>
-        </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="120" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="question"
+                     Grid.Column="0"
+                     Height="40"
+                     Margin="0,0,10,0"
+                     KeyDown="Question_KeyDown" />
+
+                    <Button Grid.Column="1"
+                    Height="40"
+                    Content="Send"
+                    Click="SendMessage" />
+                </Grid>
+            </Grid>
+
+            <!-- Task assistant section -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+               Text="Task Assistant"
+               FontSize="20"
+               FontWeight="Bold"
+               Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="1"
+               Text="Task Title" />
+
+                <TextBox x:Name="taskTitle"
+             Grid.Row="2"
+             Height="35"
+             Margin="0,5,0,10" />
+
+                <TextBlock Grid.Row="3"
+               Text="Task Description" />
+
+                <TextBox x:Name="taskDescription"
+             Grid.Row="4"
+             Height="60"
+             Margin="0,5,0,10"
+             TextWrapping="Wrap"
+             AcceptsReturn="True" />
+
+                <StackPanel Grid.Row="5"
+                Margin="0,0,0,10">
+                    <TextBlock Text="Reminder Date" />
+
+                    <DatePicker x:Name="taskReminderDate"
+                    Height="35"
+                    Margin="0,5,0,10" />
+
+                    <Button Content="Add Task"
+                Height="35"
+                Click="AddTask_Click" />
+                </StackPanel>
+
+                <ListView x:Name="taskList"
+              Grid.Row="6"
+              Margin="0,0,0,10"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Title"
+                                DisplayMemberBinding="{Binding Title}"
+                                Width="110" />
+                            <GridViewColumn Header="Description"
+                                DisplayMemberBinding="{Binding Description}"
+                                Width="160" />
+                            <GridViewColumn Header="Reminder"
+                                DisplayMemberBinding="{Binding ReminderText}"
+                                Width="100" />
+                            <GridViewColumn Header="Status"
+                                DisplayMemberBinding="{Binding Status}"
+                                Width="80" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <StackPanel Grid.Row="7"
+                Orientation="Horizontal">
+                    <Button Content="Complete"
+                Width="100"
+                Height="35"
+                Margin="0,0,10,0"
+                Click="CompleteTask_Click" />
+
+                    <Button Content="Delete"
+                Width="100"
+                Height="35"
+                Click="DeleteTask_Click" />
+                </StackPanel>
+            </Grid>
+
+
+
+        </Grid> <!--end of chats grid-->
 
     </Grid>
 </Window>

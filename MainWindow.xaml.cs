@@ -32,6 +32,10 @@ namespace Chat_Bot_Part2_POE
         MediaPlayer player = new MediaPlayer();
         private Class1 botData;
         private Dictionary<string, List<string>> userInterests = new Dictionary<string, List<string>>(); //for memory recollection
+        private List<CyberTask> cyberTasks = new List<CyberTask>(); //for task management   
+        private CyberTask pendingTask = null;
+        private bool waitingForReminderResponse = false;
+        private bool waitingForTaskTitle = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -70,6 +74,8 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
         //method to send messages and detect user interests
         private void SendMessage(object sender, RoutedEventArgs e)
         {
@@ -86,6 +92,14 @@ namespace Chat_Bot_Part2_POE
             error_method(username, questions);
 
             string lower = questions.ToLower();
+
+            // Check if the message is part of the task assistant conversation
+            // If it is handled here, stop the method so normal chatbot replies do not also run
+            if (TryHandleTaskConversation(questions))
+            {
+                question.Clear();
+                return;
+            }
 
             //First chec if there are any interests
             if (lower.Contains("interested"))
@@ -315,6 +329,7 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
         //method to detect interests in the user input and store them in a text file
         private void ProcessUserInput(string input)
         {
@@ -404,6 +419,8 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
         //method to enable memory recollection of the user interests and display them when the user asks about them
         private void LoadUserMemory()
         {
@@ -430,6 +447,10 @@ namespace Chat_Bot_Part2_POE
         } //end of LoadUserMemory method
 
 
+
+
+
+        //method to handle the key down event for the question textbox to allow sending messages by pressing enter
         private void Question_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -442,5 +463,372 @@ namespace Chat_Bot_Part2_POE
             }
         }
 
-    }
+
+
+
+
+        //method to create tasks
+        private void AddTask_Click(object sender, RoutedEventArgs e)
+        {
+            //create task title
+            string title = taskTitle.Text.Trim();
+            //create task description
+            string description = taskDescription.Text.Trim();
+            //set task date
+            DateTime? reminderDate = taskReminderDate.SelectedDate;
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                error_method("ChatBot", "Please enter a task title.");
+                    return;
+            }
+
+
+            //Creation of the taask
+            CyberTask newTask = new CyberTask
+            {
+                Title = title,
+                Description = description,
+                ReminderDate = reminderDate,
+                IsCompleted = false
+            };
+
+            cyberTasks.Add(newTask);
+            RefreshTaskList();
+
+            string reminderMessage = reminderDate.HasValue
+                ? " Reminder set for " + reminderDate.Value.ToShortDateString() + "."
+                : " No reminder was set.";
+
+            error_method("Chatbot", "Your task has been added:" + title + "." + reminderMessage);
+            taskTitle.Clear();
+            taskDescription.Clear();
+            taskReminderDate.SelectedDate = null;
+
+        } //end of AddTask_Click method
+
+
+
+
+
+
+        //method to mark task as completed
+        private void CompleteTask_Click(object sender, RoutedEventArgs e)
+        {
+            CyberTask selectedTask = taskList.SelectedItem as CyberTask;
+
+            if (selectedTask == null)
+            {
+                error_method("ChatBot", "Please select a task to mark as completed.");
+                return;
+            }
+
+            selectedTask.IsCompleted = true;
+            RefreshTaskList();
+
+            error_method("ChatBot", "Task marked as completed: " + selectedTask.Title + ".");
+        } //end of CompleteTask_Click method
+
+
+
+
+
+
+        //method to delete task
+        private void DeleteTask_Click(object sender, RoutedEventArgs e)
+        {
+            CyberTask selectedTask = taskList.SelectedItem as CyberTask;
+
+            if (selectedTask == null)
+            {
+                error_method("ChatBot", "Please select a task to delete.");
+                return;
+            }
+
+            cyberTasks.Remove(selectedTask);
+            RefreshTaskList();
+
+            error_method("ChatBot", "Task deleted: " + selectedTask.Title + ".");
+        }
+
+
+
+
+
+
+        //method to refresh the task list
+        private void RefreshTaskList()
+        {
+            taskList.ItemsSource = null;
+            taskList.ItemsSource = cyberTasks;
+        } //end of RefreshTaskList method
+
+
+
+
+
+        // Method to handle task-related chatbot conversations before normal chatbot responses
+        private bool TryHandleTaskConversation(string input)
+        {
+            // Convert input to lowercase for easier keyword checks
+            string lower = input.ToLower();
+
+            // If the bot asked for a task title, treat this message as the title
+            if (waitingForTaskTitle)
+            {
+                string title = input.Trim();
+
+                // Create a cybersecurity-related description for the task title
+                string description = CreateTaskDescription(title);
+
+                // Reject the task only after the user has provided the title
+                if (description == null)
+                {
+                    error_method("ChatBot", "That task does not seem cybersecurity-related. Try a task like 'Review privacy settings' or 'Enable two-factor authentication'.");
+
+                    // Keep waiting so the user can provide another task title
+                    waitingForTaskTitle = true;
+                    return true;
+                }
+
+                // Create the pending task now that the title has been accepted
+                pendingTask = new CyberTask
+                {
+                    Title = title,
+                    Description = description,
+                    IsCompleted = false
+                };
+
+                // Move to the reminder question
+                waitingForTaskTitle = false;
+                waitingForReminderResponse = true;
+
+                error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
+
+                return true;
+            }
+
+            // If the bot already asked about a reminder, handle the user's next reply here
+            if (waitingForReminderResponse && pendingTask != null)
+            {
+                // If the user says yes, try to extract a reminder date
+                if (lower.Contains("yes") || lower.Contains("remind"))
+                {
+                    DateTime? reminderDate = ExtractReminderDate(lower);
+
+                    // Add the selected reminder date to the temporary task
+                    pendingTask.ReminderDate = reminderDate;
+
+                    // Save the task into the current in-memory task list
+                    cyberTasks.Add(pendingTask);
+                    RefreshTaskList();
+
+                    string reminderText = reminderDate.HasValue
+                        ? "in " + (reminderDate.Value.Date - DateTime.Now.Date).Days + " days"
+                        : "soon";
+
+                    error_method("ChatBot", "Got it! I'll remind you " + reminderText + ".");
+
+                    // Clear the temporary task state
+                    pendingTask = null;
+                    waitingForReminderResponse = false;
+
+                    return true;
+                }
+
+                // If the user says no, add the task without a reminder
+                if (lower.Contains("no"))
+                {
+                    cyberTasks.Add(pendingTask);
+                    RefreshTaskList();
+
+                    error_method("ChatBot", "No problem. I've added the task without a reminder.");
+
+                    // Clear the temporary task state
+                    pendingTask = null;
+                    waitingForReminderResponse = false;
+
+                    return true;
+                }
+            }
+
+            // Detect when the user wants to create or add a task
+            if (lower.Contains("create a task") || lower.Contains("add a task") || lower.Contains("add task"))
+            {
+                // Pull the task title out of the user's sentence
+                string title = ExtractTaskTitle(input);
+
+                // If no specific title was provided, ask the user for it
+                if (string.IsNullOrWhiteSpace(title) || title.ToLower() == "for me")
+                {
+                    waitingForTaskTitle = true;
+                    error_method("ChatBot", "Sure, what should the task be called?");
+                    return true;
+                }
+
+                // Create a cybersecurity-related description for the task title
+                string description = CreateTaskDescription(title);
+
+                // Reject only after a title was actually provided
+                if (description == null)
+                {
+                    error_method("ChatBot", "That task does not seem cybersecurity-related. Try something like 'Review privacy settings' or 'Enable two-factor authentication'.");
+                    return true;
+                }
+
+                // Create the task temporarily while waiting for reminder confirmation
+                pendingTask = new CyberTask
+                {
+                    Title = title,
+                    Description = description,
+                    IsCompleted = false
+                };
+
+                // Tell the program that the bot is now waiting for a reminder answer
+                waitingForReminderResponse = true;
+
+                error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
+
+                return true;
+            }
+
+            // Returning false means this message was not a task command
+            return false;
+        } //end of TryHandleTaskConversation method
+
+
+
+
+
+        // Helper method to extract the task title from common task creation phrases
+        private string ExtractTaskTitle(string input)
+        {
+            string title = input;
+
+            // Remove common phrases so only the task name remains
+            title = Regex.Replace(title, "i want you to create a task called", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "create a task called", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "add a task called", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "add task", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "called", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "can you create a task called", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "for me", "", RegexOptions.IgnoreCase);
+            return title.Trim();
+        }//end of ExtractTaskTitle method
+
+
+
+        // Helper method to create a cybersecurity description based on the task title
+        private string CreateTaskDescription(string title)
+        {
+            string lowerTitle = title.ToLower();
+
+            // Match common cybersecurity topics and return a correct description
+            if (lowerTitle.Contains("privacy"))
+            {
+                return "Review account privacy settings to ensure your data is protected.";
+            }
+
+            if (lowerTitle.Contains("password"))
+            {
+                return "Update your password and make sure it is strong, unique, and secure.";
+            }
+
+            if (lowerTitle.Contains("two-factor") || lowerTitle.Contains("2fa") || lowerTitle.Contains("authentication"))
+            {
+                return "Enable two-factor authentication to add an extra layer of security to your account.";
+            }
+
+            if (lowerTitle.Contains("phishing"))
+            {
+                return "Review phishing warning signs and avoid clicking suspicious links or attachments.";
+            }
+
+            if (lowerTitle.Contains("malware") || lowerTitle.Contains("antivirus"))
+            {
+                return "Check your device for malware and make sure your antivirus protection is up to date.";
+            }
+
+            if (lowerTitle.Contains("backup") || lowerTitle.Contains("back up"))
+            {
+                return "Back up important files so your data can be recovered if your device is lost, damaged, or attacked.";
+            }
+
+            if (lowerTitle.Contains("wifi") || lowerTitle.Contains("wi-fi") || lowerTitle.Contains("network"))
+            {
+                return "Review your Wi-Fi and network security settings to prevent unauthorized access.";
+            }
+
+            if (lowerTitle.Contains("software") || lowerTitle.Contains("update"))
+            {
+                return "Update your software to patch security vulnerabilities and keep your device protected.";
+            }
+
+            // Return null if the task is not related to cybersecurity
+            return null;
+        } //end of CreateTaskDescription
+
+
+
+        // Helper method that tries to detect reminder phrases 
+        private DateTime? ExtractReminderDate(string input)
+        {
+            // Looks for the phrases
+            Match match = Regex.Match(input, @"in\s+(\d+)\s+day");
+
+            if (match.Success)
+            {
+                int days = int.Parse(match.Groups[1].Value);
+                return DateTime.Now.AddDays(days);
+            }
+
+            // Handle simple reminder wording
+            if (input.Contains("tomorrow"))
+            {
+                return DateTime.Now.AddDays(1);
+            }
+
+            if (input.Contains("next week"))
+            {
+                return DateTime.Now.AddDays(7);
+            }
+
+            // No reminder date found
+            return null;
+        }
+
+
+
+        public class CyberTask
+        {
+            public string Title { get; set; }
+            public string Description { get; set; }
+            public DateTime? ReminderDate { get; set; }
+            public bool IsCompleted { get; set; }
+
+            public string ReminderText
+            {
+                get
+                {
+                    if (ReminderDate.HasValue)
+                    {
+                        return ReminderDate.Value.ToShortDateString();
+                    }
+
+                    return "No reminder";
+                }
+            }
+
+            public string Status
+            {
+                get
+                {
+                    return IsCompleted ? "Completed" : "Pending";
+                }
+            }
+        }
+
+
+
+    } //end of class
 }

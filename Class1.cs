@@ -210,8 +210,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-        //creation of safety tips dictionary as a property to store safety tips for different sentiments
-        //
 
         
             

@@ -33,15 +33,32 @@ namespace Chat_Bot_Part2_POE
         private Class1 botData;
         private Dictionary<string, List<string>> userInterests = new Dictionary<string, List<string>>(); //for memory recollection
         private List<CyberTask> cyberTasks = new List<CyberTask>(); //for task management   
+<<<<<<< HEAD
         private CyberTask pendingTask = null;
         private bool waitingForReminderResponse = false;
         private bool waitingForTaskTitle = false;
+=======
+        private bool waitingForReminderResponse = false;
+        private bool waitingForTaskTitle = false;
+        private bool waitingForReminderDate = false;
+        // Stores a task temporarily while the bot asks follow-up questions
+        private CyberTask pendingTask = null;
+        // Handles saving, loading, completing, and deleting tasks in the MySQL Database
+        private TaskDatabaseService taskDatabase = new TaskDatabaseService();
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         public MainWindow()
         {
             InitializeComponent();
             PlayGreeting();
             botData = new Class1(BotResponses, IgnoreAll);
             LoadUserMemory();
+            //oad the saved tasks from te database when the app starts
+            LoadTasksFromDatabase();
 
         } //end of  MainWindow constructor
 
@@ -221,6 +238,9 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
+
         //method to check name of the user
         private static bool Check_name(string name)
         { //start of check name method
@@ -330,6 +350,21 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to detect interests in the user input and store them in a text file
         private void ProcessUserInput(string input)
         {
@@ -421,6 +456,13 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to enable memory recollection of the user interests and display them when the user asks about them
         private void LoadUserMemory()
         {
@@ -450,6 +492,20 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to handle the key down event for the question textbox to allow sending messages by pressing enter
         private void Question_KeyDown(object sender, KeyEventArgs e)
         {
@@ -467,6 +523,18 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to create tasks
         private void AddTask_Click(object sender, RoutedEventArgs e)
         {
@@ -493,8 +561,22 @@ namespace Chat_Bot_Part2_POE
                 IsCompleted = false
             };
 
+<<<<<<< HEAD
             cyberTasks.Add(newTask);
             RefreshTaskList();
+=======
+            // Save the new task to the database, then reload the task list
+            try
+            {
+                taskDatabase.AddTask(newTask);
+                LoadTasksFromDatabase();
+            }
+            catch (Exception ex)
+            {
+                error_method("ChatBot", "Database error while adding task: " + ex.Message);
+                return;
+            }
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
             string reminderMessage = reminderDate.HasValue
                 ? " Reminder set for " + reminderDate.Value.ToShortDateString() + "."
@@ -512,6 +594,19 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to mark task as completed
         private void CompleteTask_Click(object sender, RoutedEventArgs e)
         {
@@ -523,8 +618,22 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
+<<<<<<< HEAD
             selectedTask.IsCompleted = true;
             RefreshTaskList();
+=======
+            // Update the selected task in the database, then reload the task list
+            try
+            {
+                taskDatabase.CompleteTask(selectedTask.Id);
+                LoadTasksFromDatabase();
+            }
+            catch (Exception ex)
+            {
+                error_method("ChatBot", "Database error while completing task: " + ex.Message);
+                return;
+            }
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
             error_method("ChatBot", "Task marked as completed: " + selectedTask.Title + ".");
         } //end of CompleteTask_Click method
@@ -534,6 +643,16 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to delete task
         private void DeleteTask_Click(object sender, RoutedEventArgs e)
         {
@@ -545,8 +664,22 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
+<<<<<<< HEAD
             cyberTasks.Remove(selectedTask);
             RefreshTaskList();
+=======
+            // Delete the selected task from the database, then reload the task list
+            try
+            {
+                taskDatabase.DeleteTask(selectedTask.Id);
+                LoadTasksFromDatabase();
+            }
+            catch (Exception ex)
+            {
+                error_method("ChatBot", "Database error while deleting task: " + ex.Message);
+                return;
+            }
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
             error_method("ChatBot", "Task deleted: " + selectedTask.Title + ".");
         }
@@ -567,12 +700,77 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
+=======
+
+
+        // Method to load all the saved tasks from the database and display them in the task list
+        private void LoadTasksFromDatabase()
+        {
+            try
+            {
+                cyberTasks = taskDatabase.GetAllTasks();
+                RefreshTaskList();
+            }
+            catch (Exception ex)
+            {
+                error_method("ChatBot", "Database error while loading tasks: " + ex.Message);
+            }
+        } //end of LoadTasksFromDatabase method
+
+
+
+
+
+
+
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
         // Method to handle task-related chatbot conversations before normal chatbot responses
         private bool TryHandleTaskConversation(string input)
         {
             // Convert input to lowercase for easier keyword checks
             string lower = input.ToLower();
 
+<<<<<<< HEAD
+=======
+            // If the bot is waiting for the actual reminder date, handle that here
+            if (waitingForReminderDate && pendingTask != null)
+            {
+                DateTime? reminderDate = ExtractReminderDate(lower);
+
+                if (!reminderDate.HasValue)
+                {
+                    error_method("ChatBot", "Please enter a reminder like 'in 3 days', 'tomorrow', or 'next week'.");
+                    return true;
+                }
+
+                // Save the reminder date on the pending task
+                pendingTask.ReminderDate = reminderDate;
+
+                // Save the task to MySQL, then reload the list
+                try
+                {
+                    taskDatabase.AddTask(pendingTask);
+                    LoadTasksFromDatabase();
+                }
+                catch (Exception ex)
+                {
+                    error_method("ChatBot", "Database error while saving task: " + ex.Message);
+                    return true;
+                }
+
+                error_method("ChatBot", "Got it! I've created the task and set the reminder.");
+
+                // Clear the conversation state
+                pendingTask = null;
+                waitingForReminderDate = false;
+                waitingForReminderResponse = false;
+
+                return true;
+            }
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
             // If the bot asked for a task title, treat this message as the title
             if (waitingForTaskTitle)
             {
@@ -581,6 +779,7 @@ namespace Chat_Bot_Part2_POE
                 // Create a cybersecurity-related description for the task title
                 string description = CreateTaskDescription(title);
 
+<<<<<<< HEAD
                 // Reject the task only after the user has provided the title
                 if (description == null)
                 {
@@ -592,6 +791,15 @@ namespace Chat_Bot_Part2_POE
                 }
 
                 // Create the pending task now that the title has been accepted
+=======
+                if (description == null)
+                {
+                    error_method("ChatBot", "That task does not seem cybersecurity-related. Try a task like 'Review privacy settings' or 'Enable two-factor authentication'.");
+                    return true;
+                }
+
+                // Store the task temporarily until the reminder question is answered
+>>>>>>> f40da29 (Refactored Code to use Database storage)
                 pendingTask = new CyberTask
                 {
                     Title = title,
@@ -599,15 +807,23 @@ namespace Chat_Bot_Part2_POE
                     IsCompleted = false
                 };
 
+<<<<<<< HEAD
                 // Move to the reminder question
                 waitingForTaskTitle = false;
                 waitingForReminderResponse = true;
 
                 error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
+=======
+                waitingForTaskTitle = false;
+                waitingForReminderResponse = true;
+
+                error_method("ChatBot", "Sure, I've created a task called \"" + title + "\". Would you like a reminder?");
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
                 return true;
             }
 
+<<<<<<< HEAD
             // If the bot already asked about a reminder, handle the user's next reply here
             if (waitingForReminderResponse && pendingTask != null)
             {
@@ -645,16 +861,54 @@ namespace Chat_Bot_Part2_POE
                     error_method("ChatBot", "No problem. I've added the task without a reminder.");
 
                     // Clear the temporary task state
+=======
+            // If the bot is waiting for yes/no about a reminder, handle that here
+            if (waitingForReminderResponse && pendingTask != null)
+            {
+                if (lower.Contains("yes"))
+                {
+                    waitingForReminderResponse = false;
+                    waitingForReminderDate = true;
+
+                    error_method("ChatBot", "When should I set the reminder for?");
+                    return true;
+                }
+
+                if (lower.Contains("no"))
+                {
+                    // Save the task without a reminder
+                    try
+                    {
+                        taskDatabase.AddTask(pendingTask);
+                        LoadTasksFromDatabase();
+                    }
+                    catch (Exception ex)
+                    {
+                        error_method("ChatBot", "Database error while saving task: " + ex.Message);
+                        return true;
+                    }
+
+                    error_method("ChatBot", "No problem. I've created the task without a reminder.");
+
+                    // Clear the conversation state
+>>>>>>> f40da29 (Refactored Code to use Database storage)
                     pendingTask = null;
                     waitingForReminderResponse = false;
 
                     return true;
                 }
+<<<<<<< HEAD
+=======
+
+                error_method("ChatBot", "Please answer yes or no. Would you like a reminder?");
+                return true;
+>>>>>>> f40da29 (Refactored Code to use Database storage)
             }
 
             // Detect when the user wants to create or add a task
             if (lower.Contains("create a task") || lower.Contains("add a task") || lower.Contains("add task"))
             {
+<<<<<<< HEAD
                 // Pull the task title out of the user's sentence
                 string title = ExtractTaskTitle(input);
 
@@ -670,13 +924,32 @@ namespace Chat_Bot_Part2_POE
                 string description = CreateTaskDescription(title);
 
                 // Reject only after a title was actually provided
+=======
+                string title = ExtractTaskTitle(input);
+
+                // If the user did not provide a clear title, ask for it
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    waitingForTaskTitle = true;
+                    error_method("ChatBot", "Sure, what would you like the task to be called?");
+                    return true;
+                }
+
+                // Create a cybersecurity-related description for the provided task title
+                string description = CreateTaskDescription(title);
+
+>>>>>>> f40da29 (Refactored Code to use Database storage)
                 if (description == null)
                 {
                     error_method("ChatBot", "That task does not seem cybersecurity-related. Try something like 'Review privacy settings' or 'Enable two-factor authentication'.");
                     return true;
                 }
 
+<<<<<<< HEAD
                 // Create the task temporarily while waiting for reminder confirmation
+=======
+                // Store the task temporarily until the reminder question is answered
+>>>>>>> f40da29 (Refactored Code to use Database storage)
                 pendingTask = new CyberTask
                 {
                     Title = title,
@@ -684,17 +957,27 @@ namespace Chat_Bot_Part2_POE
                     IsCompleted = false
                 };
 
+<<<<<<< HEAD
                 // Tell the program that the bot is now waiting for a reminder answer
                 waitingForReminderResponse = true;
 
                 error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
 
+=======
+                waitingForReminderResponse = true;
+
+                error_method("ChatBot", "Sure, I've created a task called \"" + title + "\". Would you like a reminder?");
+>>>>>>> f40da29 (Refactored Code to use Database storage)
                 return true;
             }
 
             // Returning false means this message was not a task command
             return false;
+<<<<<<< HEAD
         } //end of TryHandleTaskConversation method
+=======
+        }
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
 
 
@@ -799,6 +1082,7 @@ namespace Chat_Bot_Part2_POE
 
 
 
+<<<<<<< HEAD
         public class CyberTask
         {
             public string Title { get; set; }
@@ -827,6 +1111,9 @@ namespace Chat_Bot_Part2_POE
                 }
             }
         }
+=======
+       
+>>>>>>> f40da29 (Refactored Code to use Database storage)
 
 
 

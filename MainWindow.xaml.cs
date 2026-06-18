@@ -33,16 +33,11 @@ namespace Chat_Bot_Part2_POE
         private Class1 botData;
         private Dictionary<string, List<string>> userInterests = new Dictionary<string, List<string>>(); //for memory recollection
         private List<CyberTask> cyberTasks = new List<CyberTask>(); //for task management   
-<<<<<<< HEAD
-        private CyberTask pendingTask = null;
-        private bool waitingForReminderResponse = false;
-        private bool waitingForTaskTitle = false;
-=======
         private bool waitingForReminderResponse = false;
         private bool waitingForTaskTitle = false;
         private bool waitingForReminderDate = false;
         // Stores a task temporarily while the bot asks follow-up questions
-        private CyberTask pendingTask = null;
+        private CyberTask? pendingTask = null;
         // Handles saving, loading, completing, and deleting tasks in the MySQL Database
         private TaskDatabaseService taskDatabase = new TaskDatabaseService();
 
@@ -50,7 +45,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         public MainWindow()
         {
             InitializeComponent();
@@ -62,7 +56,7 @@ namespace Chat_Bot_Part2_POE
 
         } //end of  MainWindow constructor
 
-        
+
 
 
 
@@ -97,7 +91,7 @@ namespace Chat_Bot_Part2_POE
         private void SendMessage(object sender, RoutedEventArgs e)
         {
             string questions = question.Text.Trim();
-            
+
 
             if (string.IsNullOrEmpty(questions))
             {
@@ -126,10 +120,10 @@ namespace Chat_Bot_Part2_POE
             }
 
             //sentimetiment detection
-            else if (lower.Contains("worried") || 
-                    lower.Contains("anxious")  || 
-                    lower.Contains("afraid")   || 
-                    lower.Contains("concerned")||
+            else if (lower.Contains("worried") ||
+                    lower.Contains("anxious") ||
+                    lower.Contains("afraid") ||
+                    lower.Contains("concerned") ||
                     lower.Contains("scared"))
             {
 
@@ -146,26 +140,26 @@ namespace Chat_Bot_Part2_POE
                         }
                     }
                 }
-                string message = string.IsNullOrWhiteSpace(topic) 
-                    ? "I understand that you're feeling anxious." : 
+                string message = string.IsNullOrWhiteSpace(topic)
+                    ? "I understand that you're feeling anxious." :
                     $"I understand that you're anxious about {topic}.";
 
-                    if (botData != null &&
-                        botData.SafetyTips != null &&
-                        !string.IsNullOrWhiteSpace(topic) &&
-                        botData.SafetyTips.ContainsKey(topic))
-                    {
-                        message += $" \nHere's a tip: {botData.SafetyTips[topic]}";
-                    }
-                    else
-                    {
-                        message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on all things pertaining to " + (topic) + ".";
-                    }
-
-                    error_method("ChatBot", message);
+                if (botData != null &&
+                    botData.SafetyTips != null &&
+                    !string.IsNullOrWhiteSpace(topic) &&
+                    botData.SafetyTips.ContainsKey(topic))
+                {
+                    message += $" \nHere's a tip: {botData.SafetyTips[topic]}";
+                }
+                else
+                {
+                    message += " I don't have specific tips for that topic, but remember to always be cautious and stay informed on all things pertaining to " + (topic) + ".";
                 }
 
-                else
+                error_method("ChatBot", message);
+            }
+
+            else
             {
                 //Respond normally
                 string botReply = GetRandomResponse(questions);
@@ -176,18 +170,18 @@ namespace Chat_Bot_Part2_POE
             }
 
             // Auto scroll if need 
-            if(chats.Items.Count > 0)
+            if (chats.Items.Count > 0)
             {
-            chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
+                chats.ScrollIntoView(chats.Items[chats.Items.Count - 1]);
 
             }
-            question.Clear(); 
+            question.Clear();
         }
 
 
 
 
-      
+
 
 
 
@@ -325,9 +319,9 @@ namespace Chat_Bot_Part2_POE
             //split the sentence into words
             string[] words = lowerInput.Split(new char[]
                 { ' ', ',', '.', '?', '!', ';', ':'
-                
+
                 }, StringSplitOptions.RemoveEmptyEntries);
-        
+
             // Loop through the dictionary to find matching keywords and store the corresponding responses
             foreach (var entry in BotResponses)
             {
@@ -341,7 +335,7 @@ namespace Chat_Bot_Part2_POE
                 }
             }
 
-           
+
 
             // Default response if no keyword is matched
             return "I don’t have a response for that yet, please try rephrasing or asking a different question";
@@ -350,8 +344,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -364,7 +356,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to detect interests in the user input and store them in a text file
         private void ProcessUserInput(string input)
         {
@@ -456,13 +447,10 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to enable memory recollection of the user interests and display them when the user asks about them
         private void LoadUserMemory()
         {
@@ -492,8 +480,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -505,7 +491,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to handle the key down event for the question textbox to allow sending messages by pressing enter
         private void Question_KeyDown(object sender, KeyEventArgs e)
         {
@@ -523,8 +508,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -534,7 +517,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to create tasks
         private void AddTask_Click(object sender, RoutedEventArgs e)
         {
@@ -548,7 +530,7 @@ namespace Chat_Bot_Part2_POE
             if (string.IsNullOrWhiteSpace(title))
             {
                 error_method("ChatBot", "Please enter a task title.");
-                    return;
+                return;
             }
 
 
@@ -561,10 +543,6 @@ namespace Chat_Bot_Part2_POE
                 IsCompleted = false
             };
 
-<<<<<<< HEAD
-            cyberTasks.Add(newTask);
-            RefreshTaskList();
-=======
             // Save the new task to the database, then reload the task list
             try
             {
@@ -576,7 +554,6 @@ namespace Chat_Bot_Part2_POE
                 error_method("ChatBot", "Database error while adding task: " + ex.Message);
                 return;
             }
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
             string reminderMessage = reminderDate.HasValue
                 ? " Reminder set for " + reminderDate.Value.ToShortDateString() + "."
@@ -594,8 +571,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -606,7 +581,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to mark task as completed
         private void CompleteTask_Click(object sender, RoutedEventArgs e)
         {
@@ -618,10 +592,6 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
-<<<<<<< HEAD
-            selectedTask.IsCompleted = true;
-            RefreshTaskList();
-=======
             // Update the selected task in the database, then reload the task list
             try
             {
@@ -633,7 +603,6 @@ namespace Chat_Bot_Part2_POE
                 error_method("ChatBot", "Database error while completing task: " + ex.Message);
                 return;
             }
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
             error_method("ChatBot", "Task marked as completed: " + selectedTask.Title + ".");
         } //end of CompleteTask_Click method
@@ -643,8 +612,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -652,7 +619,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         //method to delete task
         private void DeleteTask_Click(object sender, RoutedEventArgs e)
         {
@@ -664,10 +630,6 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
-<<<<<<< HEAD
-            cyberTasks.Remove(selectedTask);
-            RefreshTaskList();
-=======
             // Delete the selected task from the database, then reload the task list
             try
             {
@@ -679,7 +641,6 @@ namespace Chat_Bot_Part2_POE
                 error_method("ChatBot", "Database error while deleting task: " + ex.Message);
                 return;
             }
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
             error_method("ChatBot", "Task deleted: " + selectedTask.Title + ".");
         }
@@ -700,8 +661,6 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-=======
 
 
         // Method to load all the saved tasks from the database and display them in the task list
@@ -725,15 +684,12 @@ namespace Chat_Bot_Part2_POE
 
 
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
         // Method to handle task-related chatbot conversations before normal chatbot responses
         private bool TryHandleTaskConversation(string input)
         {
             // Convert input to lowercase for easier keyword checks
             string lower = input.ToLower();
 
-<<<<<<< HEAD
-=======
             // If the bot is waiting for the actual reminder date, handle that here
             if (waitingForReminderDate && pendingTask != null)
             {
@@ -770,7 +726,6 @@ namespace Chat_Bot_Part2_POE
                 return true;
             }
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
             // If the bot asked for a task title, treat this message as the title
             if (waitingForTaskTitle)
             {
@@ -779,19 +734,6 @@ namespace Chat_Bot_Part2_POE
                 // Create a cybersecurity-related description for the task title
                 string description = CreateTaskDescription(title);
 
-<<<<<<< HEAD
-                // Reject the task only after the user has provided the title
-                if (description == null)
-                {
-                    error_method("ChatBot", "That task does not seem cybersecurity-related. Try a task like 'Review privacy settings' or 'Enable two-factor authentication'.");
-
-                    // Keep waiting so the user can provide another task title
-                    waitingForTaskTitle = true;
-                    return true;
-                }
-
-                // Create the pending task now that the title has been accepted
-=======
                 if (description == null)
                 {
                     error_method("ChatBot", "That task does not seem cybersecurity-related. Try a task like 'Review privacy settings' or 'Enable two-factor authentication'.");
@@ -799,7 +741,6 @@ namespace Chat_Bot_Part2_POE
                 }
 
                 // Store the task temporarily until the reminder question is answered
->>>>>>> f40da29 (Refactored Code to use Database storage)
                 pendingTask = new CyberTask
                 {
                     Title = title,
@@ -807,61 +748,14 @@ namespace Chat_Bot_Part2_POE
                     IsCompleted = false
                 };
 
-<<<<<<< HEAD
-                // Move to the reminder question
-                waitingForTaskTitle = false;
-                waitingForReminderResponse = true;
-
-                error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
-=======
                 waitingForTaskTitle = false;
                 waitingForReminderResponse = true;
 
                 error_method("ChatBot", "Sure, I've created a task called \"" + title + "\". Would you like a reminder?");
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
                 return true;
             }
 
-<<<<<<< HEAD
-            // If the bot already asked about a reminder, handle the user's next reply here
-            if (waitingForReminderResponse && pendingTask != null)
-            {
-                // If the user says yes, try to extract a reminder date
-                if (lower.Contains("yes") || lower.Contains("remind"))
-                {
-                    DateTime? reminderDate = ExtractReminderDate(lower);
-
-                    // Add the selected reminder date to the temporary task
-                    pendingTask.ReminderDate = reminderDate;
-
-                    // Save the task into the current in-memory task list
-                    cyberTasks.Add(pendingTask);
-                    RefreshTaskList();
-
-                    string reminderText = reminderDate.HasValue
-                        ? "in " + (reminderDate.Value.Date - DateTime.Now.Date).Days + " days"
-                        : "soon";
-
-                    error_method("ChatBot", "Got it! I'll remind you " + reminderText + ".");
-
-                    // Clear the temporary task state
-                    pendingTask = null;
-                    waitingForReminderResponse = false;
-
-                    return true;
-                }
-
-                // If the user says no, add the task without a reminder
-                if (lower.Contains("no"))
-                {
-                    cyberTasks.Add(pendingTask);
-                    RefreshTaskList();
-
-                    error_method("ChatBot", "No problem. I've added the task without a reminder.");
-
-                    // Clear the temporary task state
-=======
             // If the bot is waiting for yes/no about a reminder, handle that here
             if (waitingForReminderResponse && pendingTask != null)
             {
@@ -891,40 +785,19 @@ namespace Chat_Bot_Part2_POE
                     error_method("ChatBot", "No problem. I've created the task without a reminder.");
 
                     // Clear the conversation state
->>>>>>> f40da29 (Refactored Code to use Database storage)
                     pendingTask = null;
                     waitingForReminderResponse = false;
 
                     return true;
                 }
-<<<<<<< HEAD
-=======
 
                 error_method("ChatBot", "Please answer yes or no. Would you like a reminder?");
                 return true;
->>>>>>> f40da29 (Refactored Code to use Database storage)
             }
 
             // Detect when the user wants to create or add a task
             if (lower.Contains("create a task") || lower.Contains("add a task") || lower.Contains("add task"))
             {
-<<<<<<< HEAD
-                // Pull the task title out of the user's sentence
-                string title = ExtractTaskTitle(input);
-
-                // If no specific title was provided, ask the user for it
-                if (string.IsNullOrWhiteSpace(title) || title.ToLower() == "for me")
-                {
-                    waitingForTaskTitle = true;
-                    error_method("ChatBot", "Sure, what should the task be called?");
-                    return true;
-                }
-
-                // Create a cybersecurity-related description for the task title
-                string description = CreateTaskDescription(title);
-
-                // Reject only after a title was actually provided
-=======
                 string title = ExtractTaskTitle(input);
 
                 // If the user did not provide a clear title, ask for it
@@ -938,18 +811,13 @@ namespace Chat_Bot_Part2_POE
                 // Create a cybersecurity-related description for the provided task title
                 string description = CreateTaskDescription(title);
 
->>>>>>> f40da29 (Refactored Code to use Database storage)
                 if (description == null)
                 {
                     error_method("ChatBot", "That task does not seem cybersecurity-related. Try something like 'Review privacy settings' or 'Enable two-factor authentication'.");
                     return true;
                 }
 
-<<<<<<< HEAD
-                // Create the task temporarily while waiting for reminder confirmation
-=======
                 // Store the task temporarily until the reminder question is answered
->>>>>>> f40da29 (Refactored Code to use Database storage)
                 pendingTask = new CyberTask
                 {
                     Title = title,
@@ -957,27 +825,15 @@ namespace Chat_Bot_Part2_POE
                     IsCompleted = false
                 };
 
-<<<<<<< HEAD
-                // Tell the program that the bot is now waiting for a reminder answer
-                waitingForReminderResponse = true;
-
-                error_method("ChatBot", "Task added with the description \"" + pendingTask.Description + "\". Would you like a reminder?");
-
-=======
                 waitingForReminderResponse = true;
 
                 error_method("ChatBot", "Sure, I've created a task called \"" + title + "\". Would you like a reminder?");
->>>>>>> f40da29 (Refactored Code to use Database storage)
                 return true;
             }
 
             // Returning false means this message was not a task command
             return false;
-<<<<<<< HEAD
-        } //end of TryHandleTaskConversation method
-=======
         }
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
 
 
@@ -1082,38 +938,7 @@ namespace Chat_Bot_Part2_POE
 
 
 
-<<<<<<< HEAD
-        public class CyberTask
-        {
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public DateTime? ReminderDate { get; set; }
-            public bool IsCompleted { get; set; }
 
-            public string ReminderText
-            {
-                get
-                {
-                    if (ReminderDate.HasValue)
-                    {
-                        return ReminderDate.Value.ToShortDateString();
-                    }
-
-                    return "No reminder";
-                }
-            }
-
-            public string Status
-            {
-                get
-                {
-                    return IsCompleted ? "Completed" : "Pending";
-                }
-            }
-        }
-=======
-       
->>>>>>> f40da29 (Refactored Code to use Database storage)
 
 
 

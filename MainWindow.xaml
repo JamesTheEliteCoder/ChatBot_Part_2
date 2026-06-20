@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat_Bot_Part2_POE"
         mc:Ignorable="d"
-        Title="CyberSecurity Chatbot" Height="600" Width="1000">
+        Title="CyberSecurity Chatbot" 
+        Height="650" 
+        Width="1100"
+        MinHeight="650"
+        MinWidth="1100"
+        ResizeMode="CanResize">
 
     <!-- Parent grid -->
     <Grid>

@@ -115,13 +115,9 @@ namespace Chat_Bot_Part2_POE
             string lower = questions.ToLower();
 
 
-            // Show the activity log when the user asks what the chatbot has done
-            if (lower.Contains("show activity log") ||
-                lower.Contains("activity log") ||
-                lower.Contains("log") ||
-                lower.Contains("what have you done for me"))
+            // Try to handle flexible NLP-style commands first
+            if (TryHandleNlpCommand(questions))
             {
-                ShowActivityLog();
                 question.Clear();
                 return;
             }
@@ -135,6 +131,18 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
+
+
+            // Show the activity log when the user asks what the chatbot has done
+            if (lower.Contains("show activity log") ||
+                lower.Contains("activity log") ||
+                lower.Contains("log") ||
+                lower.Contains("what have you done for me"))
+            {
+                ShowActivityLog();
+                question.Clear();
+                return;
+            }
             //First chec if there are any interests
             if (lower.Contains("interested"))
             {
@@ -1493,6 +1501,146 @@ namespace Chat_Bot_Part2_POE
             error_method("ChatBot", message.Trim());
         } //end of ShowActivityLog method
 
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to check if the user's input contains any of the given keywords
+        private bool ContainsAnyKeyword(string input, params string[] keywords)
+        {
+            // Convert to lowercase to make matching easier
+            string lowerInput = input.ToLower();
+
+            foreach (string keyword in keywords)
+            {
+                if (lowerInput.Contains(keyword.ToLower()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        } // end of ContainsAnyKeyword method
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Helper method to handle general NLP-style commands before the normal chatbot response system
+        private bool TryHandleNlpCommand(string input)
+        {
+            string lower = input.ToLower();
+
+            // Activity log requests
+            if (ContainsAnyKeyword(lower, "show activity log", "activity log", "what have you done for me", "recent actions"))
+            {
+                ShowActivityLog();
+                AddActivityLog("Activity log viewed through chatbot command.");
+                return true;
+            }
+
+            // Quiz requests
+            if (ContainsAnyKeyword(lower, "start quiz", "take quiz", "begin quiz", "cyber quiz", "quiz me"))
+            {
+                StartQuiz_Click(null, null);
+                AddActivityLog("Quiz started through chatbot command.");
+                error_method("ChatBot", "Opening the cybersecurity quiz for you.");
+                return true;
+            }
+
+            // Reminder requests without the full task creation phrase
+            if (ContainsAnyKeyword(lower, "remind me", "set a reminder", "reminder"))
+            {
+                // If the reminder mentions a cybersecurity topic, turn it into a task
+                string title = ExtractReminderTaskTitle(input);
+                string description = CreateTaskDescription(title);
+
+                if (description == null)
+                {
+                    error_method("ChatBot", "I can set cybersecurity reminders. Try something like 'Remind me to update my password tomorrow'.");
+                    return true;
+                }
+
+                CyberTask reminderTask = new CyberTask
+                {
+                    Title = title,
+                    Description = description,
+                    ReminderDate = ExtractReminderDate(lower),
+                    IsCompleted = false
+                };
+
+                try
+                {
+                    taskDatabase.AddTask(reminderTask);
+                    LoadTasksFromDatabase();
+                }
+                catch (Exception ex)
+                {
+                    error_method("ChatBot", "Database error while saving reminder: " + ex.Message);
+                    return true;
+                }
+
+                AddActivityLog("Reminder task created through NLP: " + reminderTask.Title);
+
+                string reminderText = reminderTask.ReminderDate.HasValue
+                    ? " for " + reminderTask.ReminderText
+                    : "";
+
+                error_method("ChatBot", "Reminder task added: " + reminderTask.Title + reminderText + ".");
+                return true;
+            }
+
+            return false;
+        } // end of TryHandleNlpCommand method
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Helper method to extract a simple task title from reminder-style messages
+        private string ExtractReminderTaskTitle(string input)
+        {
+            string title = input;
+
+            // Remove common reminder phrases so the remaining text becomes the task title
+            title = Regex.Replace(title, "can you remind me to", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "please remind me to", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "remind me to", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "set a reminder to", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "set a reminder for", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "reminder to", "", RegexOptions.IgnoreCase);
+
+            // Remove date/time phrases from the title
+            title = Regex.Replace(title, @"in\s+\d+\s+days?", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "tomorrow", "", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, "next week", "", RegexOptions.IgnoreCase);
+
+            return title.Trim();
+        } //end of ExtractReminderTaskTitle method
 
 
 

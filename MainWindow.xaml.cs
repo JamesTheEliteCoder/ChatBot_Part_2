@@ -40,6 +40,14 @@ namespace Chat_Bot_Part2_POE
         private CyberTask? pendingTask = null;
         // Handles saving, loading, completing, and deleting tasks in the MySQL Database
         private TaskDatabaseService taskDatabase = new TaskDatabaseService();
+        //Store all the quiz questions for the mini game
+        private List<QuizQuestion> quizQuestions = new List<QuizQuestion>();
+        //Track which uqestions the user is currently answering
+        private int currentQuizIndex = 0;
+        //Tracks how many questions the user answered correctly
+        private int quizScore = 0;
+        //Track if the current question has already been answered
+        private bool quizAnswerSubmitted = false;
 
 
 
@@ -51,9 +59,9 @@ namespace Chat_Bot_Part2_POE
             PlayGreeting();
             botData = new Class1(BotResponses, IgnoreAll);
             LoadUserMemory();
-            //oad the saved tasks from te database when the app starts
+            //load the saved tasks from te database when the app starts
             LoadTasksFromDatabase();
-
+            LoadQuizQuestions();
         } //end of  MainWindow constructor
 
 
@@ -935,6 +943,420 @@ namespace Chat_Bot_Part2_POE
             // No reminder date found
             return null;
         }
+
+
+        //Clss for the Quiz questions
+        // Each represents one question in the cybersecurity quiz
+        public class QuizQuestion
+        {
+            // The question shown to the user
+            public string Question { get; set; }
+
+            // Four possible answers
+            public string OptionA { get; set; }
+            public string OptionB { get; set; }
+            public string OptionC { get; set; }
+            public string OptionD { get; set; }
+
+            // The correct answer letter: A, B, C, or D
+            public string CorrectAnswer { get; set; }
+
+            // Feedback shown after the user answers a question
+            public string Explanation { get; set; }
+        } //end of QuizQuestion class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to load the quiz questions into a list
+        private void LoadQuizQuestions()
+        {
+            quizQuestions = new List<QuizQuestion>
+    {
+        new QuizQuestion
+        {
+            Question = "What should you do if you receive an email asking for your password?",
+            OptionA = "Reply with your password",
+            OptionB = "Delete or report the email as phishing",
+            OptionC = "Forward it to friends",
+            OptionD = "Click the link to check if it is real",
+            CorrectAnswer = "B",
+            Explanation = "Correct answer: B. Legitimate services will not ask for your password by email."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What is two-factor authentication used for?",
+            OptionA = "Making your screen brighter",
+            OptionB = "Adding an extra layer of account security",
+            OptionC = "Deleting old files",
+            OptionD = "Speeding up your internet",
+            CorrectAnswer = "B",
+            Explanation = "Correct answer: B. Two-factor authentication adds another proof of identity besides your password."
+        },
+
+        new QuizQuestion
+        {
+            Question = "Which password is the strongest?",
+            OptionA = "password123",
+            OptionB = "qwerty",
+            OptionC = "MyDogSpot",
+            OptionD = "R8!vL2#pQ9$z",
+            CorrectAnswer = "D",
+            Explanation = "Correct answer: D. Strong passwords are long, unique, and use a mix of characters."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What is phishing?",
+            OptionA = "A scam that tricks users into giving away sensitive information",
+            OptionB = "A safe way to store passwords",
+            OptionC = "A type of computer hardware",
+            OptionD = "A method for cleaning your keyboard",
+            CorrectAnswer = "A",
+            Explanation = "Correct answer: A. Phishing tries to fool people into sharing private information."
+        },
+
+        new QuizQuestion
+        {
+            Question = "Why should you update software regularly?",
+            OptionA = "To make your device heavier",
+            OptionB = "To patch security vulnerabilities",
+            OptionC = "To remove the internet",
+            OptionD = "To make passwords visible",
+            CorrectAnswer = "B",
+            Explanation = "Correct answer: B. Updates often fix security weaknesses attackers could exploit."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What should you do on public Wi-Fi?",
+            OptionA = "Access sensitive banking sites without protection",
+            OptionB = "Share your passwords openly",
+            OptionC = "Use caution and avoid sensitive activity if unprotected",
+            OptionD = "Disable all security settings",
+            CorrectAnswer = "C",
+            Explanation = "Correct answer: C. Public Wi-Fi can expose your data if the connection is not secure."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What does malware do?",
+            OptionA = "Protects your files automatically",
+            OptionB = "Harms, steals, or disrupts systems and data",
+            OptionC = "Improves battery life",
+            OptionD = "Creates secure passwords",
+            CorrectAnswer = "B",
+            Explanation = "Correct answer: B. Malware is malicious software designed to cause harm."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What is a safe browsing habit?",
+            OptionA = "Clicking every pop-up advert",
+            OptionB = "Ignoring browser security warnings",
+            OptionC = "Checking website links before entering personal information",
+            OptionD = "Downloading files from unknown websites",
+            CorrectAnswer = "C",
+            Explanation = "Correct answer: C. Checking links helps you avoid fake or dangerous websites."
+        },
+
+        new QuizQuestion
+        {
+            Question = "What should you do if you suspect an account was hacked?",
+            OptionA = "Ignore it",
+            OptionB = "Change the password and enable two-factor authentication",
+            OptionC = "Post your password online",
+            OptionD = "Use the same password everywhere",
+            CorrectAnswer = "B",
+            Explanation = "Correct answer: B. Changing the password and enabling 2FA helps secure the account."
+        },
+
+        new QuizQuestion
+        {
+            Question = "Why is password reuse risky?",
+            OptionA = "One leaked password can expose multiple accounts",
+            OptionB = "It makes websites load faster",
+            OptionC = "It improves encryption",
+            OptionD = "It blocks phishing emails",
+            CorrectAnswer = "A",
+            Explanation = "Correct answer: A. If one reused password is stolen, attackers can try it on other accounts."
+        }
+    };
+        } //end of LoadQuizQuestions method
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Starts the quiz from the first question and resets the score
+        private void StartQuiz_Click(object sender, RoutedEventArgs e)
+        {
+            // Make sure questions are available before starting
+            if (quizQuestions.Count == 0)
+            {
+                error_method("ChatBot", "The quiz could not start because no questions were loaded.");
+                return;
+            }
+
+            // Reset quiz progress
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizAnswerSubmitted = false;
+
+            // Enable quiz buttons for a new attempt
+            submitAnswerButton.IsEnabled = true;
+            nextQuestionButton.IsEnabled = false;
+
+            // Display the first question
+            DisplayQuizQuestion();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to display the current quiz question and answer options
+        private void DisplayQuizQuestion()
+        {
+            // Get the current question from the list
+            QuizQuestion currentQuestion = quizQuestions[currentQuizIndex];
+
+            // Update the question progress
+            quizProgressText.Text = "Question " + (currentQuizIndex + 1) + " of " + quizQuestions.Count +
+                                    " | Score: " + quizScore;
+
+            // Display the question and answer choices
+            quizQuestionText.Text = currentQuestion.Question;
+            answerOptionA.Content = "A) " + currentQuestion.OptionA;
+            answerOptionB.Content = "B) " + currentQuestion.OptionB;
+            answerOptionC.Content = "C) " + currentQuestion.OptionC;
+            answerOptionD.Content = "D) " + currentQuestion.OptionD;
+
+            // Clear previous answer selection and feedback
+            answerOptionA.IsChecked = false;
+            answerOptionB.IsChecked = false;
+            answerOptionC.IsChecked = false;
+            answerOptionD.IsChecked = false;
+            quizFeedbackText.Text = "";
+
+            // Allow the user to submit the current question
+            quizAnswerSubmitted = false;
+            submitAnswerButton.IsEnabled = true;
+            nextQuestionButton.IsEnabled = false;
+        } //end of DisplayQuizQuestion method
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to check the selected answer and give immediate feedback
+        private void SubmitAnswer_Click(object sender, RoutedEventArgs e)
+        {
+            // Prevent the same question from being submitted more than once
+            if (quizAnswerSubmitted)
+            {
+                return;
+            }
+
+            // Find which answer the user selected
+            string selectedAnswer = GetSelectedQuizAnswer();
+
+            if (string.IsNullOrWhiteSpace(selectedAnswer))
+            {
+                quizFeedbackText.Text = "Please select an answer before submitting.";
+                return;
+            }
+
+            QuizQuestion currentQuestion = quizQuestions[currentQuizIndex];
+
+            // Compare selected answer with the correct answer
+            if (selectedAnswer == currentQuestion.CorrectAnswer)
+            {
+                quizScore++;
+                quizFeedbackText.Text = "Correct! " + currentQuestion.Explanation;
+            }
+            else
+            {
+                quizFeedbackText.Text = "Incorrect. " + currentQuestion.Explanation;
+            }
+
+            // Mark this question as answered
+            quizAnswerSubmitted = true;
+
+            // Update score display immediately
+            quizProgressText.Text = "Question " + (currentQuizIndex + 1) + " of " + quizQuestions.Count +
+                                    " | Score: " + quizScore;
+
+            // Disable submit button and allow moving to the next question
+            submitAnswerButton.IsEnabled = false;
+            nextQuestionButton.IsEnabled = true;
+        } // end of SubmitAnswer_Click method
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to move onto the next question or end the quiz if the user chooses to 
+        private void NextQuestion_Click(object sender, RoutedEventArgs e)
+        {
+            // Move to the next question
+            currentQuizIndex++;
+
+            // If there are more questions, display the next one
+            if (currentQuizIndex < quizQuestions.Count)
+            {
+                DisplayQuizQuestion();
+                return;
+            }
+
+            // End the quiz after the last question
+            EndQuiz();
+        } // end of NextQuestion_Click method
+
+
+
+
+
+
+
+
+
+        // Method to get the selected multiple-choice answer 
+        private string GetSelectedQuizAnswer()
+        {
+            if (answerOptionA.IsChecked == true)
+            {
+                return "A";
+            }
+
+            if (answerOptionB.IsChecked == true)
+            {
+                return "B";
+            }
+
+            if (answerOptionC.IsChecked == true)
+            {
+                return "C";
+            }
+
+            if (answerOptionD.IsChecked == true)
+            {
+                return "D";
+            }
+
+            // No answer selected
+            return "";
+        } //end of GetSelectedQuizAnswer method
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to show the final quiz score and give performance feedback
+        private void EndQuiz()
+        {
+            // Disable quiz action buttons after the quiz ends
+            submitAnswerButton.IsEnabled = false;
+            nextQuestionButton.IsEnabled = false;
+
+            // Build a final feedback message based on the user's score
+            string finalMessage;
+
+            if (quizScore >= 8)
+            {
+                finalMessage = "Great job! You're a cybersecurity pro.";
+            }
+            else if (quizScore >= 5)
+            {
+                finalMessage = "Good effort! You know some key cybersecurity ideas, but keep practicing.";
+            }
+            else
+            {
+                finalMessage = "Keep learning to stay safe online. Cybersecurity takes practice.";
+            }
+
+            // Show the final score in the quiz tab
+            quizProgressText.Text = "Quiz complete! Final score: " + quizScore + " out of " + quizQuestions.Count;
+            quizQuestionText.Text = finalMessage;
+            quizFeedbackText.Text = "Click Start Quiz if you want to try again.";
+
+            // Clear answer options
+            answerOptionA.Content = "";
+            answerOptionB.Content = "";
+            answerOptionC.Content = "";
+            answerOptionD.Content = "";
+
+            answerOptionA.IsChecked = false;
+            answerOptionB.IsChecked = false;
+            answerOptionC.IsChecked = false;
+            answerOptionD.IsChecked = false;
+        } //end of EndQuiz method
+
+
+
+
+
+
 
 
 

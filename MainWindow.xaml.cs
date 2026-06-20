@@ -48,6 +48,8 @@ namespace Chat_Bot_Part2_POE
         private int quizScore = 0;
         //Track if the current question has already been answered
         private bool quizAnswerSubmitted = false;
+        //Store recent actions taken by the chatbot and app features
+        private List<string> activityLog = new List<string>();
 
 
 
@@ -111,6 +113,19 @@ namespace Chat_Bot_Part2_POE
             error_method(username, questions);
 
             string lower = questions.ToLower();
+
+
+            // Show the activity log when the user asks what the chatbot has done
+            if (lower.Contains("show activity log") ||
+                lower.Contains("activity log") ||
+                lower.Contains("log") ||
+                lower.Contains("what have you done for me"))
+            {
+                ShowActivityLog();
+                question.Clear();
+                return;
+            }
+
 
             // Check if the message is part of the task assistant conversation
             // If it is handled here, stop the method so normal chatbot replies do not also run
@@ -539,6 +554,8 @@ namespace Chat_Bot_Part2_POE
             {
                 error_method("ChatBot", "Please enter a task title.");
                 return;
+
+               
             }
 
 
@@ -571,6 +588,11 @@ namespace Chat_Bot_Part2_POE
             taskTitle.Clear();
             taskDescription.Clear();
             taskReminderDate.SelectedDate = null;
+
+
+                // To record the task action in the activity log
+                AddActivityLog("Task added: " + title);
+
 
         } //end of AddTask_Click method
 
@@ -651,7 +673,11 @@ namespace Chat_Bot_Part2_POE
             }
 
             error_method("ChatBot", "Task deleted: " + selectedTask.Title + ".");
-        }
+
+            // To record the task action in the activity log
+            AddActivityLog("Task deleted: " + selectedTask.Title);
+
+        } //end of DeleteTask_Click method
 
 
 
@@ -684,6 +710,15 @@ namespace Chat_Bot_Part2_POE
                 error_method("ChatBot", "Database error while loading tasks: " + ex.Message);
             }
         } //end of LoadTasksFromDatabase method
+
+
+
+
+
+
+
+
+
 
 
 
@@ -725,6 +760,8 @@ namespace Chat_Bot_Part2_POE
                 }
 
                 error_method("ChatBot", "Got it! I've created the task and set the reminder.");
+
+
 
                 // Clear the conversation state
                 pendingTask = null;
@@ -783,6 +820,9 @@ namespace Chat_Bot_Part2_POE
                     {
                         taskDatabase.AddTask(pendingTask);
                         LoadTasksFromDatabase();
+
+                        // To record any chatbot-created task in the activity log
+                        AddActivityLog("Task added through chatbot: " + pendingTask.Title);
                     }
                     catch (Exception ex)
                     {
@@ -847,6 +887,14 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
+
+
+
+
+
+
         // Helper method to extract the task title from common task creation phrases
         private string ExtractTaskTitle(string input)
         {
@@ -862,6 +910,18 @@ namespace Chat_Bot_Part2_POE
             title = Regex.Replace(title, "for me", "", RegexOptions.IgnoreCase);
             return title.Trim();
         }//end of ExtractTaskTitle method
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -917,6 +977,16 @@ namespace Chat_Bot_Part2_POE
 
 
 
+
+
+
+
+
+
+
+
+
+
         // Helper method that tries to detect reminder phrases 
         private DateTime? ExtractReminderDate(string input)
         {
@@ -945,7 +1015,20 @@ namespace Chat_Bot_Part2_POE
         }
 
 
-        //Clss for the Quiz questions
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //Class for the Quiz questions
         // Each represents one question in the cybersecurity quiz
         public class QuizQuestion
         {
@@ -1133,7 +1216,10 @@ namespace Chat_Bot_Part2_POE
 
             // Display the first question
             DisplayQuizQuestion();
-        }
+
+            // Record that the user started a quiz attempt
+            AddActivityLog("Cybersecurity quiz started.");
+        } //end of StartQuiz_Click method
 
 
 
@@ -1196,7 +1282,7 @@ namespace Chat_Bot_Part2_POE
                 return;
             }
 
-            // Find which answer the user selected
+            // Find the answer that the user selected
             string selectedAnswer = GetSelectedQuizAnswer();
 
             if (string.IsNullOrWhiteSpace(selectedAnswer))
@@ -1207,7 +1293,7 @@ namespace Chat_Bot_Part2_POE
 
             QuizQuestion currentQuestion = quizQuestions[currentQuizIndex];
 
-            // Compare selected answer with the correct answer
+            // Compare that selected answer with the correct answer
             if (selectedAnswer == currentQuestion.CorrectAnswer)
             {
                 quizScore++;
@@ -1218,14 +1304,14 @@ namespace Chat_Bot_Part2_POE
                 quizFeedbackText.Text = "Incorrect. " + currentQuestion.Explanation;
             }
 
-            // Mark this question as answered
+            // Mark the question as answered
             quizAnswerSubmitted = true;
 
-            // Update score display immediately
+            // Update the score display immediately
             quizProgressText.Text = "Question " + (currentQuizIndex + 1) + " of " + quizQuestions.Count +
                                     " | Score: " + quizScore;
 
-            // Disable submit button and allow moving to the next question
+            // Disable the submit button and allow moving to the next question
             submitAnswerButton.IsEnabled = false;
             nextQuestionButton.IsEnabled = true;
         } // end of SubmitAnswer_Click method
@@ -1293,7 +1379,7 @@ namespace Chat_Bot_Part2_POE
                 return "D";
             }
 
-            // No answer selected
+            // If no answer is selected
             return "";
         } //end of GetSelectedQuizAnswer method
 
@@ -1319,7 +1405,7 @@ namespace Chat_Bot_Part2_POE
             submitAnswerButton.IsEnabled = false;
             nextQuestionButton.IsEnabled = false;
 
-            // Build a final feedback message based on the user's score
+            // Send a final feedback message based on the user's score
             string finalMessage;
 
             if (quizScore >= 8)
@@ -1340,6 +1426,9 @@ namespace Chat_Bot_Part2_POE
             quizQuestionText.Text = finalMessage;
             quizFeedbackText.Text = "Click Start Quiz if you want to try again.";
 
+            // Record final quiz result in the activity log 
+            AddActivityLog("Cybersecurity quiz completed. Score: " + quizScore + " out of " + quizQuestions.Count);
+
             // Clear answer options
             answerOptionA.Content = "";
             answerOptionB.Content = "";
@@ -1351,6 +1440,69 @@ namespace Chat_Bot_Part2_POE
             answerOptionC.IsChecked = false;
             answerOptionD.IsChecked = false;
         } //end of EndQuiz method
+
+
+
+
+
+
+
+
+
+        // Method to add a timestamped action to the activity log
+        private void AddActivityLog(string action)
+        {
+            // Store the action with the current date and time
+            string logEntry = DateTime.Now.ToString("yyyy-MM-dd HH:mm") + " - " + action;
+
+            activityLog.Add(logEntry);
+        } //end of AddActivityLog method
+
+
+
+
+
+
+
+
+
+
+
+
+        // Method to displays the most recent activity log entries in the chatbot
+        private void ShowActivityLog()
+        {
+            if (activityLog.Count == 0)
+            {
+                error_method("ChatBot", "No activity has been recorded yet.");
+                return;
+            }
+
+            // Show only the last 20 actions to keep the response short
+            List<string> recentActions = activityLog
+                .Skip(Math.Max(0, activityLog.Count - 20))
+                .ToList();
+
+            string message = "Here's a summary of recent actions:\n";
+
+            for (int i = 0; i < recentActions.Count; i++)
+            {
+                message += (i + 1) + ". " + recentActions[i] + "\n";
+            }
+
+            error_method("ChatBot", message.Trim());
+        } //end of ShowActivityLog method
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -174,3 +174,95 @@ I also spent quite alot of time on debugging:
 * UI event handling
 * Audio file integration
 
+#ChatBot_Part_3
+
+1. Added Task Assistant functionality
+   Users can now create cybersecurity-related reminders and keep track of important security activities and each task contains a Task title, description, optional reminder date, and a completion status.
+
+* Created a helper method to capture the task title.
+* Created a helper method to create a task description
+* Created a method to capture the reminder date
+* Created a method to mark the completetion status of the tasks, which are displayed in a list view so that the user can easily monitor and view any outstandong work
+
+
+2. MySQL Database Intergration
+
+* Integrated database storege for the application to store things relatesd to the tasks such as the task_ID, title, description, reminder date and completion status.
+* Created a class called TaskDatabaseService.cs
+* I created the database was using MySql workbench 8.0 and proceeded to intergrate it into the application through TaskDatabaseService.cs
+
+
+* Created CyberTask.cs to hold the properties of the the tasks such as the id, title, ddescription, reinder date and the task status
+* Created a method that allows the user to mark the task as completed
+* Created a method that allows the user to delete a task
+
+* Redesigned the UI to have a tab for the mini game and the task assistant has been intergrted into the chatbot conversation section
+
+3. Mini game (Cyber Quiz)
+
+* Intergrated a quiuz game into the application
+* the quiz includes:
+* multiple-choice questions
+* four answer options
+* immediate feedback
+* score tracking
+* progress display
+* next question navigation
+
+* Quiz navigation features include a start quiz, submit answer, and next question button
+
+* Improved the layout by making use of nested grids
+
+* Improved the user experience by adding additional touches such as:
+* Enter key sends messages
+* Chat textbox clears automatically after sending
+* Automatic scrolling to the newest message
+* Better spacing throughout the interface
+* Improved visual organisation
+
+* The Main Window is responsible for:
+* User interface
+* Event handling
+* Displaying chatbot messages
+* Managing user interaction
+
+* Class 1 is responsible for:
+* chatbot responses
+* cybersecurity knowledge
+* safety tips
+* keyword detection
+
+* CyberTask is responsible for:
+* chatbot responses
+* cybersecurity knowledge
+* safety tips
+* keyword detection
+
+* TaskDatabaseService is responsible for:
+* All sql statements and database storage
+
+4. NLP intergration
+* Added NLP intergration to ensure a smooth conversational flow.
+* This required a small refactoring of the methods such as send messages to apply the change
+
+5. Challenges faced
+
+* The biggest challenge I faced was connecting the WPF application to MySQL because MySql required configuring of:
+
+* MySQL Server
+* MySQL Connector
+* Connection Strings
+* SQL Commands
+
+* Maintaining Separation 
+* As the project became larger, keeping business logic separate from UI code became increasingly important.
+* Creating dedicated classes helped prevent MainWindow from becoming overly complicated.
+
+
+* Refreshing the Task List
+* After adding, deleting or completing a task, the interface needed to refresh immediately.
+*This required reloading task data from the database after each operation to keep the display synchronized.
+
+
+* Designing the Interface
+*Combining the chatbot,task manager and quiz inside one application without making the interface confusing required several layout redesigns, and making use of a TabControl ultimately provided the cleanest solution.

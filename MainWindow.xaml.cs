@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Media;
+using System.Collections.ObjectModel;
 
 namespace Chat_Bot_Part2_POE
 {
@@ -50,6 +51,7 @@ namespace Chat_Bot_Part2_POE
         private bool quizAnswerSubmitted = false;
         //Store recent actions taken by the chatbot and app features
         private List<string> activityLog = new List<string>();
+        private ObservableCollection<ChatMessage> chatMessages = new ObservableCollection<ChatMessage>();
 
 
 
@@ -64,6 +66,7 @@ namespace Chat_Bot_Part2_POE
             //load the saved tasks from te database when the app starts
             LoadTasksFromDatabase();
             LoadQuizQuestions();
+            chats.ItemsSource = chatMessages;
         } //end of  MainWindow constructor
 
 
@@ -256,6 +259,7 @@ namespace Chat_Bot_Part2_POE
 
             //assign the usernae to the global variable
             username = name;
+            question.Focus();
         }
 
 
@@ -305,31 +309,17 @@ namespace Chat_Bot_Part2_POE
 
 
         //mthod to change the font colour of the user and the chatbot
+        // Adds a message to the chat window (bot or user)
         private void error_method(string name, string message)
-        {//star of error mehtod
+        {
+            chatMessages.Add(new ChatMessage
+            {
+                // Combine sender + message for display
+                Message = message,
 
-            //call the chats which is a listview
-            chats.Items.Add(
-                new TextBlock
-                {
-                    Inlines = {
-                     new Run{
-                     Text=name + " : ",
-                     Foreground =Brushes.Purple
-
-                     }   ,
-                     new Run {
-                     Text= " " + message ,
-                     Foreground =Brushes.LightBlue
-
-                     }
-
-                    }
-
-                }
-
-                );
-
+                // Decide if it's user or bot
+                IsUser = name.ToLower() != "chatbot" 
+});
         } //end of error_method
 
 
@@ -692,11 +682,17 @@ namespace Chat_Bot_Part2_POE
 
 
 
-        //method to refresh the task list
+        // Method to refresh the task ListView after the tasks are loaded or changed
         private void RefreshTaskList()
         {
             taskList.ItemsSource = null;
             taskList.ItemsSource = cyberTasks;
+
+            // Scroll to the newest visible task if tasks exist
+            if (taskList.Items.Count > 0)
+            {
+                taskList.ScrollIntoView(taskList.Items[0]);
+            }
         } //end of RefreshTaskList method
 
 

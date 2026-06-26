@@ -10,21 +10,116 @@
         Width="1100"
         MinHeight="650"
         MinWidth="1100"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        Background="Black"
+        FontFamily="Segoe UI"
+        Foreground="AntiqueWhite">
+    
+    
+    
+
+    <!-- Window resources for styling -->
+
+    <Window.Resources>
+
+        <!-- Main colours -->
+        <SolidColorBrush x:Key="PrimaryBg" Color="#121212"/>
+        <SolidColorBrush x:Key="SecondaryBg" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#7C4DFF"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#42A5F5"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="White"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#B0B0B0"/>
+
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#7C4DFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Hover effect for the buttons -->
+        <Style TargetType="Button" x:Key="HoverButton">
+            <Setter Property="Background" Value="#7C4DFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#42A5F5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="#121212"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#7C4DFF"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--Style for the ListView-->
+        <Style TargetType="ListView">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+        </Style>
+
+        <!--Style for the Grid-->
+        <Style TargetType="Grid">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!--TO enhance textblock readability-->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Resources>
+    
+    <!--End of window resources-->
+
+    
 
     <!-- Parent grid -->
-    <Grid>
+    <Grid Background="{StaticResource PrimaryBg}">
 
         <!-- Logo grid -->
         <Grid>
             <Image x:Name="logoImage"
-       Width="400"
-       Height="120"
-       Stretch="Uniform"
-       HorizontalAlignment="Center"
-       VerticalAlignment="Top"
-       Margin="0,20,40,0"
-       Source="logo.png"/>
+           Width="400"
+           Height="120"
+           Stretch="Uniform"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Top"
+           Margin="0,20,40,0"
+           Source="logo.png"/>
 
         </Grid>
         <!--End of logo grid -->
@@ -42,6 +137,7 @@
                     Margin="0,150,0,0"
                     Content="submit username"
                     Click="Submit_Username"/>
+            
         </Grid>
         <!--End of username grid -->
 
@@ -68,10 +164,109 @@
                             <RowDefinition Height="60" />
                         </Grid.RowDefinitions>
 
-                        <!-- Displaying of the chatbot conversation -->
+                        <!-- Displaying of the chatbot conversation  -->
                         <ListView x:Name="chats"
                           Grid.Row="0"
-                          Margin="0,0,0,10" />
+                          Margin="0,0,0,10"
+                          Background="Transparent"
+                          BorderThickness="0">
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+
+                                    <!-- Outer container for each message -->
+                                    <Grid Margin="8">
+
+                                        <!-- Two-column layout: Left = bot...Right = user -->
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        
+                                        <!-- BOT MESSAGE -->
+                                        <!-- Bot container -->
+                                        <StackPanel Orientation="Horizontal"
+                                         Grid.Column="0"
+                                         Margin="0,0,50,0">
+
+                                            <!-- Hide the entire bot container if this is a user message -->
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+
+                                            <!--  Bot avatar -->
+                                            <TextBlock Text="🛡"
+                                             FontSize="20"
+                                             Margin="0,5,8,0"
+                                             VerticalAlignment="Top"/>
+
+                                            <!-- Bot message bubble -->
+                                            <Border Padding="12"
+                                            MaxWidth="360"
+                                            Background="#2A2A2A"
+                                            CornerRadius="12"
+                                            HorizontalAlignment="Left">
+
+                                                
+
+                                                <!-- The chatbot's message -->
+                                                <TextBlock Text="{Binding Message}"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="White"
+                                                   FontSize="14"/>
+                                            </Border>
+
+                                        </StackPanel>
+
+                                        <!--  USER MESSAGE -->
+                                        <Border Grid.Column="1"
+                                        Padding="12"
+                                        Margin="50,0,0,0"
+                                        MaxWidth="360"
+                                        Background="#7C4DFF"
+                                        CornerRadius="12"
+                                        HorizontalAlignment="Right">
+
+                                            <!-- Hide if NOT user -->
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUser}" Value="False">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+
+                                            <!-- Message text -->
+                                            <TextBlock Text="{Binding Message}"
+                           TextWrapping="Wrap"
+                           Foreground="White"
+                           FontSize="14"/>
+                                        </Border>
+
+                                    </Grid>
+
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
 
                         <!-- User input area -->
                         <Grid Grid.Row="1">
@@ -80,16 +275,28 @@
                                 <ColumnDefinition Width="120" />
                             </Grid.ColumnDefinitions>
 
+                            <!-- User message input -->
                             <TextBox x:Name="question"
                              Grid.Column="0"
-                             Height="40"
+                             Height="42"
                              Margin="0,0,10,0"
-                             KeyDown="Question_KeyDown" />
+                             Padding="12,8"
+                             FontSize="14"
+                             Background="#252525"
+                             Foreground="White"
+                             BorderBrush="#444"
+                             BorderThickness="1"
+                             CaretBrush="White"
+                             KeyDown="Question_KeyDown"
+                             ToolTip="Ask me about cybersecurity..."/>
 
+                            <!-- Send button -->
                             <Button Grid.Column="1"
-                            Height="40"
-                            Content="Send"
-                            Click="SendMessage" />
+                             Height="42"
+                             FontSize="14"
+                             FontWeight="SemiBold"
+                             Content="➤ Send"
+                             Click="SendMessage"/>
                         </Grid>
                     </Grid>
 
@@ -98,22 +305,20 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="2" MinHeight="180" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
+                        <!-- Task Assistant title -->
                         <TextBlock Grid.Row="0"
-                           Text="Task Assistant"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Margin="0,0,0,10" />
+                         Text="🛡 Task Assistant"
+                         FontSize="24"
+                         FontWeight="Bold"
+                          Foreground="White"
+                           Margin="0,0,0,20"/>
 
                         <TextBlock Grid.Row="1"
-                           Text="Task Title" />
+                           Text="🛡 Task Title" />
 
                         <TextBox x:Name="taskTitle"
                          Grid.Row="2"
@@ -145,10 +350,14 @@
 
                         <ListView x:Name="taskList"
                           Grid.Row="6"
+                          MinHeight="180" 
                           Margin="0,0,0,10"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                             <ListView.View>
+                                
+                                
+                                
                                 <GridView>
                                     <GridViewColumn Header="Title"
                                             DisplayMemberBinding="{Binding Title}"
@@ -211,6 +420,7 @@
                     <!-- Question and answer area -->
                     <StackPanel Grid.Row="2">
                         <TextBlock x:Name="quizQuestionText"
+                           Foreground="AntiqueWhite"
                            Text="Question will appear here."
                            FontSize="18"
                            TextWrapping="Wrap"
@@ -218,21 +428,25 @@
 
                         <!-- Answer choices -->
                         <RadioButton x:Name="answerOptionA"
+                             Foreground="AntiqueWhite"
                              GroupName="QuizAnswers"
                              FontSize="15"
                              Margin="0,5,0,5" />
 
                         <RadioButton x:Name="answerOptionB"
+                             Foreground="AntiqueWhite"
                              GroupName="QuizAnswers"
                              FontSize="15"
                              Margin="0,5,0,5" />
 
                         <RadioButton x:Name="answerOptionC"
+                             Foreground="AntiqueWhite"
                              GroupName="QuizAnswers"
                              FontSize="15"
                              Margin="0,5,0,5" />
 
                         <RadioButton x:Name="answerOptionD"
+                             Foreground="AntiqueWhite"
                              GroupName="QuizAnswers"
                              FontSize="15"
                              Margin="0,5,0,5" />
@@ -278,7 +492,7 @@
         
         
         
-        
-        
+      
+
     </Grid>
 </Window>

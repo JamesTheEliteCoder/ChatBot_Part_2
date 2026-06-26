@@ -9,7 +9,7 @@ namespace Chat_Bot_Part2_POE
     {
         // Connection string used to connect the C# app to your local MySQL database
         // Replace YOUR_PASSWORD with the root password you used in MySQL Workbench
-        private string connectionString = "server=127.0.0.1;port=3306;user id=root;password=MY_PASSWORD;database=cybersecurity_chatbot_db;";
+        private string connectionString = "server=127.0.0.1;port=3306;user id=root;password=UrielEtanda@874;database=cybersecurity_chatbot_db;";
 
         // Adds a new task into the tasks table
         public void AddTask(CyberTask task)
